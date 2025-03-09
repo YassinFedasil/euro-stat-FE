@@ -1,8 +1,7 @@
-// src/components/DrawDataTables.tsx
 import React, { useEffect, useState } from 'react';
 import { IDrawData } from '../interfaces/IDrawData';
 import { getDrawData } from '../services/drawDataService';
-import './DrawDataTables.css'; // Importation du fichier CSS pour le style
+import '../css/DrawDataTables.css';
 
 const DrawDataTables: React.FC = () => {
     const [draws, setDraws] = useState<IDrawData[]>([]);
@@ -31,7 +30,6 @@ const DrawDataTables: React.FC = () => {
         return <div>Aucune donnée disponible</div>;
     }
 
-    // Définition des lignes pour le tableau des numéros
     const numberRows = [
         { label: 'Numéros', field: 'number' },
         { label: 'Fréquence', field: 'frequency' },
@@ -44,7 +42,6 @@ const DrawDataTables: React.FC = () => {
         { label: 'Sortie', field: 'out_reduc' },
     ];
 
-    // Définition des lignes pour le tableau des étoiles
     const starRows = [
         { label: 'Étoiles', field: 'star' },
         { label: 'Fréquence', field: 'frequency' },
@@ -55,49 +52,54 @@ const DrawDataTables: React.FC = () => {
         { label: 'Dernière sortie', field: 'last_out' },
     ];
 
+    // Regrouper les tirages par deux
+    const groupedDraws = [];
+    for (let i = 0; i < draws.length; i += 2) {
+        groupedDraws.push(draws.slice(i, i + 2));
+    }
+
     return (
         <div>
-            <h1>Liste des tirages</h1>
-            {draws.map((draw) => (
-                <div key={draw._id} className="draw-container">
-                    <h2>Tirage - ID: {draw._id}</h2>
-
-                    {/* Conteneur flexbox pour afficher les deux tableaux en parallèle */}
-                    <div className="tables-container">
-                        {/* Tableau des numéros */}
-                        <div className="table-wrapper">
-                            <h3>Tableau des numéros</h3>
-                            <table>
-                                <tbody>
-                                {numberRows.map((row, rowIndex) => (
-                                    <tr key={rowIndex}>
-                                        <td><strong>{row.label}</strong></td>
-                                        {draw.draw_data.numbers.map((num, colIndex) => (
-                                            <td key={colIndex}>{num[row.field as keyof typeof num]}</td>
+            {/* <h3>Liste des tirages</h3> */}
+            {groupedDraws.map((group, groupIndex) => (
+                <div key={groupIndex} className="draw-group">
+                    {group.map((draw) => (
+                        <div key={draw._id} className="draw-container">
+                            <h2>Tirage: {draw._id}</h2>
+                            <div className="tables-container">
+                                <div className="table-wrapper-numbers">
+                                    {/* <h3>Tableau des numéros</h3> */}
+                                    <table>
+                                        <tbody>
+                                        {numberRows.map((row, rowIndex) => (
+                                            <tr key={rowIndex}>
+                                                <td><strong>{row.label}</strong></td>
+                                                {draw.draw_data.numbers.map((num, colIndex) => (
+                                                    <td key={colIndex}>{num[row.field as keyof typeof num]}</td>
+                                                ))}
+                                            </tr>
                                         ))}
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Tableau des étoiles */}
-                        <div className="table-wrapper">
-                            <h3>Tableau des étoiles</h3>
-                            <table>
-                                <tbody>
-                                {starRows.map((row, rowIndex) => (
-                                    <tr key={rowIndex}>
-                                        <td><strong>{row.label}</strong></td>
-                                        {draw.draw_data.stars.map((star, colIndex) => (
-                                            <td key={colIndex}>{star[row.field as keyof typeof star]}</td>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="table-wrapper-stars">
+                                    {/* <h3>Tableau des étoiles</h3> */}
+                                    <table>
+                                        <tbody>
+                                        {starRows.map((row, rowIndex) => (
+                                            <tr key={rowIndex}>
+                                                <td><strong>{row.label}</strong></td>
+                                                {draw.draw_data.stars.map((star, colIndex) => (
+                                                    <td key={colIndex}>{star[row.field as keyof typeof star]}</td>
+                                                ))}
+                                            </tr>
                                         ))}
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             ))}
         </div>
