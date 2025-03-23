@@ -1,117 +1,107 @@
-// src/components/HomePage.tsx
-import React, { useState } from 'react';
-import { postDrawData } from '../services/drawDataService';
+import React, { useEffect, useState } from 'react';
+import { IDrawData } from '../interfaces/IDrawData';
+import { getDrawData } from '../services/drawDataService';
+import '../css/HomePage.css';
 
 const HomePage: React.FC = () => {
-    const [formData, setFormData] = useState({
-        date: '',
-        N1: '',
-        N2: '',
-        N3: '',
-        N4: '',
-        N5: '',
-        E1: '',
-        E2: ''
-    });
+    const [draws, setDraws] = useState<IDrawData[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await getDrawData();
+                setDraws(data);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await postDrawData(formData);
-            // Gérer la réponse ici (ex : afficher un message de succès)
-            console.log('Réponse du serveur:', response);
-        } catch (error) {
-            // Gérer l'erreur ici (ex : afficher un message d'erreur)
-            console.error("Erreur lors de l'envoi des données:", error);
-        }
-    };
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div>Chargement...</div>;
+    }
+
+    if (draws.length === 0) {
+        return <div>Aucune donnée disponible</div>;
+    }
+
+    const numberRows = [
+        { label: 'Numéros', field: 'number' },
+        { label: 'Fréquence', field: 'frequency' },
+        { label: 'Retard', field: 'delay' },
+        { label: 'Progression', field: 'progression' },
+        { label: 'Fréq. récente', field: 'recent_frequency' },
+        { label: 'Fréq. Période Préc', field: 'frequency_previous_period' },
+        { label: 'Dernière sortie', field: 'last_out' },
+        { label: 'Rapport', field: 'report_reduc' },
+        { label: 'Sortie', field: 'out_reduc' },
+    ];
+
+    const starRows = [
+        { label: 'Étoiles', field: 'star' },
+        { label: 'Fréquence', field: 'frequency' },
+        { label: 'Retard', field: 'delay' },
+        { label: 'Progression', field: 'progression' },
+        { label: 'Fréq. récente', field: 'recent_frequency' },
+        { label: 'Fréq. Période Préc', field: 'frequency_previous_period' },
+        { label: 'Dernière sortie', field: 'last_out' },
+    ];
+
+    // Regrouper les tirages par deux
+    const groupedDraws = [];
+    for (let i = 0; i < draws.length; i += 2) {
+        groupedDraws.push(draws.slice(i, i + 2));
+    }
 
     return (
-        <div>
-            <h1>Formulaire de Tirage</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Date:</label>
-                    <input
-                        type="text"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleChange}
-                    />
+        <div className="home-page">
+            {/* <h3>Liste des tirages</h3> */}
+            {groupedDraws.map((group, groupIndex) => (
+                <div key={groupIndex} className="draw-group">
+                    {group.map((draw) => (
+                        <div key={draw._id} className="draw-container">
+                            <h2>Tirage: {draw._id}</h2>
+                            <div className="tables-container">
+                                <div className="table-wrapper-numbers">
+                                    {/* <h3>Tableau des numéros</h3> */}
+                                    <table>
+                                        <tbody>
+                                        {numberRows.map((row, rowIndex) => (
+                                            <tr key={rowIndex}>
+                                                <td><strong>{row.label}</strong></td>
+                                                {draw.draw_data.numbers.map((num, colIndex) => (
+                                                    <td key={colIndex}>{num[row.field as keyof typeof num]}</td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="table-wrapper-stars">
+                                    {/* <h3>Tableau des étoiles</h3> */}
+                                    <table>
+                                        <tbody>
+                                        {starRows.map((row, rowIndex) => (
+                                            <tr key={rowIndex}>
+                                                <td><strong>{row.label}</strong></td>
+                                                {draw.draw_data.stars.map((star, colIndex) => (
+                                                    <td key={colIndex}>{star[row.field as keyof typeof star]}</td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-                <div>
-                    <label>N1:</label>
-                    <input
-                        type="text"
-                        name="N1"
-                        value={formData.N1}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>N2:</label>
-                    <input
-                        type="text"
-                        name="N2"
-                        value={formData.N2}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>N3:</label>
-                    <input
-                        type="text"
-                        name="N3"
-                        value={formData.N3}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>N4:</label>
-                    <input
-                        type="text"
-                        name="N4"
-                        value={formData.N4}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>N5:</label>
-                    <input
-                        type="text"
-                        name="N5"
-                        value={formData.N5}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>E1:</label>
-                    <input
-                        type="text"
-                        name="E1"
-                        value={formData.E1}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>E2:</label>
-                    <input
-                        type="text"
-                        name="E2"
-                        value={formData.E2}
-                        onChange={handleChange}
-                    />
-                </div>
-                <button type="submit">Envoyer</button>
-            </form>
+            ))}
         </div>
     );
 };
