@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { IDrawData } from '../interfaces/IDrawData';
-import { getDrawData } from '../services/drawDataService';
+// src/components/HomePage.tsx
+import React, {useEffect, useState} from 'react';
+import {IDrawData} from '../interfaces/IDrawData';
+import {getDrawData} from '../services/drawDataService';
 import '../css/HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -30,26 +31,27 @@ const HomePage: React.FC = () => {
         return <div>Aucune donnée disponible</div>;
     }
 
+    // Définit les lignes du tableau pour les numéros et les étoiles
     const numberRows = [
-        { label: 'Numéros', field: 'number' },
-        { label: 'Fréquence', field: 'frequency' },
-        { label: 'Retard', field: 'delay' },
-        { label: 'Progression', field: 'progression' },
-        { label: 'Fréq. récente', field: 'recent_frequency' },
-        { label: 'Fréq. Période Préc', field: 'frequency_previous_period' },
-        { label: 'Dernière sortie', field: 'last_out' },
-        { label: 'Rapport', field: 'report_reduc' },
-        { label: 'Sortie', field: 'out_reduc' },
+        {label: 'Numéros', field: 'number'},
+        {label: 'Fréquence', field: 'frequency'},
+        {label: 'Retard', field: 'delay'},
+        {label: 'Progression', field: 'progression'},
+        {label: 'Fréq. récente', field: 'recent_frequency'},
+        {label: 'Fréq. Période Préc', field: 'frequency_previous_period'},
+        {label: 'Dernière sortie', field: 'last_out'},
+        {label: 'Rapport', field: 'report_reduc'},
+        {label: 'Sortie', field: 'out_reduc'},
     ];
 
     const starRows = [
-        { label: 'Étoiles', field: 'star' },
-        { label: 'Fréquence', field: 'frequency' },
-        { label: 'Retard', field: 'delay' },
-        { label: 'Progression', field: 'progression' },
-        { label: 'Fréq. récente', field: 'recent_frequency' },
-        { label: 'Fréq. Période Préc', field: 'frequency_previous_period' },
-        { label: 'Dernière sortie', field: 'last_out' },
+        {label: 'Étoiles', field: 'star'},
+        {label: 'Fréquence', field: 'frequency'},
+        {label: 'Retard', field: 'delay'},
+        {label: 'Progression', field: 'progression'},
+        {label: 'Fréq. récente', field: 'recent_frequency'},
+        {label: 'Fréq. Période Préc', field: 'frequency_previous_period'},
+        {label: 'Dernière sortie', field: 'last_out'},
     ];
 
     // Regrouper les tirages par deux
@@ -60,7 +62,6 @@ const HomePage: React.FC = () => {
 
     return (
         <div className="home-page">
-            {/* <h3>Liste des tirages</h3> */}
             {groupedDraws.map((group, groupIndex) => (
                 <div key={groupIndex} className="draw-group">
                     {group.map((draw) => (
@@ -68,7 +69,6 @@ const HomePage: React.FC = () => {
                             <h2>Tirage: {draw._id}</h2>
                             <div className="tables-container">
                                 <div className="table-wrapper-numbers">
-                                    {/* <h3>Tableau des numéros</h3> */}
                                     <table>
                                         <tbody>
                                         {numberRows.map((row, rowIndex) => (
@@ -83,7 +83,6 @@ const HomePage: React.FC = () => {
                                     </table>
                                 </div>
                                 <div className="table-wrapper-stars">
-                                    {/* <h3>Tableau des étoiles</h3> */}
                                     <table>
                                         <tbody>
                                         {starRows.map((row, rowIndex) => (
@@ -97,6 +96,30 @@ const HomePage: React.FC = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                {draw.draw_data.most_least_played && (
+                                    <div className="table-wrapper-most-least">
+                                        <table>
+                                            <tbody>
+                                            <tr>
+                                                <td><strong>NumMoinsJouer</strong></td>
+                                                <td>{draw.draw_data.most_least_played.least_played_numbers}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>NumPlusJouer</strong></td>
+                                                <td>{draw.draw_data.most_least_played.most_played_numbers}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>EtoilesMoinsJouer</strong></td>
+                                                <td>{draw.draw_data.most_least_played.least_played_stars}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>EtoilesPlusJouer</strong></td>
+                                                <td>{draw.draw_data.most_least_played.most_played_stars}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

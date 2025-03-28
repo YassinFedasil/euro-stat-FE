@@ -1,8 +1,9 @@
 /* Styles pour le conteneur de groupe de tirage */
 .draw-group {
     display: flex;
-    justify-content: center; /* Centrage horizontal */
-    align-items: center;     /* Centrage vertical (si besoin) */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
 }
