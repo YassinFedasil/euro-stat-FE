@@ -1,1 +1,1 @@
-To run app: npm run dev 
+npm run dev
