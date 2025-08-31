@@ -39,7 +39,7 @@ const HomePage: React.FC = () => {
         {label: 'Progression', field: 'progression'},
         {label: 'Fréq. récente', field: 'recent_frequency'},
         {label: 'Fréq. Période Préc', field: 'frequency_previous_period'},
-        {label: 'Dernière sortie', field: 'last_out'},
+        //{label: 'Dernière sortie', field: 'last_out'},
         {label: 'Rapport', field: 'report_reduc'},
         {label: 'Sortie', field: 'out_reduc'},
     ];
@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
         {label: 'Progression', field: 'progression'},
         {label: 'Fréq. récente', field: 'recent_frequency'},
         {label: 'Fréq. Période Préc', field: 'frequency_previous_period'},
-        {label: 'Dernière sortie', field: 'last_out'},
+        //{label: 'Dernière sortie', field: 'last_out'},
     ];
 
     // Regrouper les tirages par deux
