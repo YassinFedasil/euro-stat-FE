@@ -1,6 +1,4 @@
-// src/interfaces/IDrawData.ts
 
-// Interface pour les données des numéros
 export interface INumbersData {
     number: string;
     frequency: string;

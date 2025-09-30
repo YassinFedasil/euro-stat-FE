@@ -1,0 +1,77 @@
+/* Page centrée */
+.home-page-numbers-result {
+    padding: 1rem;
+    justify-content: center;        /* centre horizontalement le contenu */
+    /* si tu veux aussi centrer verticalement, ajoute:
+       align-items: center; min-height: 100vh; */
+
+}
+
+/* Groupe (contient 2 tirages) centré et responsive */
+.draw-group-numbers-result {
+    width: 150%;
+    max-width: 1100px;              /* largeur max centrée */
+    margin: 0 auto 2rem;            /* centrage + espace en bas */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;        /* centre les cartes à l’intérieur */
+
+}
+
+/* Carte d’un tirage */
+.draw-container-numbers-result {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.draw-container-numbers-result h2 {
+    font-size: 1rem;
+    color: #333;
+}
+
+.tables-container-numbers-result {
+    overflow-x: auto;
+}
+
+.table-wrapper-numbers-result {
+    width: 100%;
+}
+
+.table-wrapper-numbers-result table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+/* ⚠️ correction des sélecteurs ici */
+.table-wrapper-numbers-result th,
+.table-wrapper-numbers-result td {
+    border: 1px solid #ddd;
+    padding: 0.5rem 0.75rem;
+}
+
+.table-wrapper-stars-numbers-result th {
+    background-color: #f7f7f7;
+    font-weight: bold;
+    color: #333;
+}
+
+.table-wrapper-stars-numbers-result td:first-child {
+    font-weight: bold;
+    color: #0077cc;
+}
+
+.table-wrapper-stars-numbers-result tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+@media (max-width: 768px) {
+    /* ⚠️ utiliser la bonne classe */
+    .draw-container-numbers-result {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+}
