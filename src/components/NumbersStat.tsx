@@ -11,7 +11,7 @@ type NumberRow = {
     frequency_previous_period: string;
     last_out: string;
     sorties: string;
-    //ecart: string;
+    ecart: string;
     rapport_moyen: string;
 };
 
@@ -109,7 +109,7 @@ const NumbersStat: React.FC = () => {
                                 {[
                                     "Numéro","Fréquence","Retard","Progression",
                                     "Fréq_Récente", "Fréq_Période_Préc",
-                                    "Sorties","Rapport_moyen"
+                                    "Sorties","ecart","Rapport_moyen"
                                 ].map(h => (
                                     <th key={h} style={{ borderBottom: "1px solid #ddd", textAlign: "left", padding: "8px" }}>
                                         {h}
@@ -127,7 +127,7 @@ const NumbersStat: React.FC = () => {
                                     <td style={{ padding: "6px 8px" }}>{row.recent_frequency}</td>
                                     <td style={{ padding: "6px 8px" }}>{row.frequency_previous_period}</td>
                                     <td style={{ padding: "6px 8px" }}>{row.sorties}</td>
-                                    {/* <td style={{ padding: "6px 8px" }}>{row.ecart}</td> */}
+                                    <td style={{ padding: "6px 8px" }}>{row.ecart}</td>
                                     <td style={{ padding: "6px 8px" }}>{row.rapport_moyen}</td>
                                 </tr>
                             ))}

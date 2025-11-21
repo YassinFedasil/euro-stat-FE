@@ -11,16 +11,19 @@ type NumberMetricKey =
     | "recent_frequency"
     | "frequency_previous_period"
     | "out_reduc"
-    | "report_reduc";
+    | "report_reduc"
+    | "ecart_reduc";
 
 const NUMBER_COLUMNS: { label: string; key: NumberMetricKey }[] = [
     { label: "Fréquence", key: "frequency" },
     { label: "Retard", key: "delay" },
     { label: "Progression", key: "progression" },
     { label: "Fréq_récente", key: "recent_frequency" },
-    { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
+    { label: "Fréq_Pér_Préc", key: "frequency_previous_period" },
     { label: "Sortie", key: "out_reduc" },
+    { label: "Ecart", key: "ecart_reduc" },
     { label: "Rapport_moyen", key: "report_reduc" },
+
 ];
 
 const NumbersResult: React.FC = () => {

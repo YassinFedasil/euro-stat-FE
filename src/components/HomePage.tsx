@@ -42,6 +42,7 @@ const HomePage: React.FC = () => {
         //{label: 'Dernière sortie', field: 'last_out'},
         {label: 'Rapport', field: 'report_reduc'},
         {label: 'Sortie', field: 'out_reduc'},
+        {label: 'Ecart', field: 'ecart_reduc'},
     ];
 
     const starRows = [
