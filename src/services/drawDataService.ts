@@ -1,6 +1,7 @@
 // src/services/drawDataService.ts
 import axios from 'axios';
-import { IDrawData } from '../interfaces/IDrawData';
+import {IDrawData} from "../pages/Utils/IDrawData.ts";
+
 
 const API_URL = "http://localhost:8000/api/draw-data";
 
@@ -23,4 +24,10 @@ export const postDrawData = async (formData: any): Promise<any> => {
         console.error("Erreur lors de l'envoi des données :", error);
         throw error;
     }
+
+};
+
+// ⛔ NOUVEAU : supprimer un tirage
+export const deleteDrawData = async (id: string): Promise<void> => {
+    await axios.delete(`${API_URL}/${id}`);
 };

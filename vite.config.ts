@@ -1,10 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
 
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5173,      // force le port 5173
-    strictPort: true // si 5173 est déjà pris, ça plante au lieu de choisir un autre port
-  }
+  plugins: [
+    react(),
+    svgr({
+      svgrOptions: {
+        icon: true,
+        // This will transform your SVG to a React component
+        exportType: "named",
+        namedExport: "ReactComponent",
+      },
+    }),
+  ],
 });
