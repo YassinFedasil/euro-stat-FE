@@ -103,7 +103,7 @@ export default function Export() {
             <PageBreadcrumb pageTitle="Export from Google Drive"/>
 
             <div className="max-w-md mx-auto">
-                <form onSubmit={submitForm} className="space-y-4">
+                <form onSubmit={submitForm} className="space-y-2">
 
                     {/* Date */}
                     <Input
@@ -143,7 +143,7 @@ export default function Export() {
                     {response && (
                         <div className={`mt-3 text-center text-sm ${
                             responseType === "success" ? "text-green-600" :
-                                responseType === "error" ? "text-red-600" : "text-gray-800"
+                                responseType === "error" ? "text-red-600" : "text-red-800"
                         }`}>
                             {response}
                         </div>
