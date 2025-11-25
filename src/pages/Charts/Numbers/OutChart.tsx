@@ -1,7 +1,7 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import BarChartOut from "../../components/charts/bar/BarChartOut.tsx";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb.tsx";
+import ComponentCard from "../../../components/common/ComponentCard.tsx";
+import PageMeta from "../../../components/common/PageMeta.tsx";
+import BarChartOut from "../../../components/charts/numbers/BarChartOut.tsx";
 
 export default function OutChart() {
   return (

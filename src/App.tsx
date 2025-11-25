@@ -16,15 +16,20 @@ import Home from "./pages/Dashboard/Home";
 import Statistics from "./pages/Statistics.tsx";
 import Numbers from "./pages/Numbers.tsx";
 import Stars from "./pages/Stars.tsx";
-import ReportChart from "./pages/Charts/ReportChart.tsx";
-import OutChart from "./pages/Charts/OutChart.tsx";
-import ProgressionChart from "./pages/Charts/ProgressionChart.tsx";
-import DelayChart from "./pages/Charts/DelayChart.tsx";
-import EcartChart from "./pages/Charts/EcartChart.tsx";
-import FrequencyChart from "./pages/Charts/FrequencyChart.tsx";
-import FrequencyPreviousPeriodChart from "./pages/Charts/FrequencyPreviousPeriodChart.tsx";
-import RecentFrequencyChart from "./pages/Charts/RecentFrequencyChart.tsx";
+import ReportChart from "./pages/Charts/Numbers/ReportChart.tsx";
+import OutChart from "./pages/Charts/Numbers/OutChart.tsx";
+import ProgressionChart from "./pages/Charts/Numbers/ProgressionChart.tsx";
+import DelayChart from "./pages/Charts/Numbers/DelayChart.tsx";
+import EcartChart from "./pages/Charts/Numbers/EcartChart.tsx";
+import FrequencyChart from "./pages/Charts/Numbers/FrequencyChart.tsx";
+import FrequencyPreviousPeriodChart from "./pages/Charts/Numbers/FrequencyPreviousPeriodChart.tsx";
+import RecentFrequencyChart from "./pages/Charts/Numbers/RecentFrequencyChart.tsx";
 import Export from "./pages/Export.tsx";
+import DelayStarChart from "./pages/Charts/Stars/DelayStarChart.tsx";
+import ProgressionStarChart from "./pages/Charts/Stars/ProgressionStarChart.tsx";
+import FrequencyStarChart from "./pages/Charts/Stars/FrequencyStarChart.tsx";
+import FrequencyPreviousPeriodStarChart from "./pages/Charts/Stars/FrequencyPreviousPeriodStarChart.tsx";
+import RecentFrequencyStarChart from "./pages/Charts/Stars/RecentFrequencyStarChart.tsx";
 
 export default function App() {
   return (
@@ -53,7 +58,7 @@ export default function App() {
             <Route path="/images" element={<Images />} />
             <Route path="/videos" element={<Videos />} />
 
-            {/* Charts */}
+            {/* Charts Numbers*/}
             <Route path="/bar-chart-report" element={<ReportChart />} />
             <Route path="/bar-chart-out" element={<OutChart />} />
             <Route path="/bar-chart-delay" element={<DelayChart />} />
@@ -62,6 +67,13 @@ export default function App() {
             <Route path="/bar-chart-ecarts" element={<EcartChart />} />
             <Route path="/bar-chart-frequency-previous-period" element={<FrequencyPreviousPeriodChart />} />
             <Route path="/bar-chart-recent-frequency" element={<RecentFrequencyChart />} />
+
+            {/* Charts Stars*/}
+            <Route path="/bar-chart-star-delay" element={<DelayStarChart />} />
+            <Route path="/bar-chart-star-progression" element={<ProgressionStarChart />} />
+            <Route path="/bar-chart-star-frequency" element={<FrequencyStarChart />} />
+            <Route path="/bar-chart-star-frequency-previous-period" element={<FrequencyPreviousPeriodStarChart />} />
+            <Route path="/bar-chart-star-recent-frequency" element={<RecentFrequencyStarChart />} />
           </Route>
 
           {/* Auth Layout */}

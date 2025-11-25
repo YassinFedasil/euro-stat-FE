@@ -1,7 +1,7 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import BarChartRecentFrequency from "../../components/charts/bar/BarChartRecentFrequency.tsx";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb.tsx";
+import ComponentCard from "../../../components/common/ComponentCard.tsx";
+import PageMeta from "../../../components/common/PageMeta.tsx";
+import BarChartRecentFrequency from "../../../components/charts/numbers/BarChartRecentFrequency.tsx";
 
 export default function RecentFrequencyChart() {
   return (

@@ -1,7 +1,7 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import BarChartEcarts from "../../components/charts/bar/BarChartEcarts.tsx";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb.tsx";
+import ComponentCard from "../../../components/common/ComponentCard.tsx";
+import PageMeta from "../../../components/common/PageMeta.tsx";
+import BarChartEcarts from "../../../components/charts/numbers/BarChartEcarts.tsx";
 
 export default function EcartChart() {
   return (

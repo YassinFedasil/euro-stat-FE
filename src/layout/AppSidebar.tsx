@@ -7,9 +7,9 @@ import {
     ChevronDownIcon,
     GridIcon,
     HorizontaLDots,
-    PieChartIcon,
 } from "../icons";
 import {useSidebar} from "../context/SidebarContext";
+import {ChartNoAxesCombined, Star} from "lucide-react";
 
 type NavItem = {
     name: string;
@@ -48,8 +48,8 @@ const navItems: NavItem[] = [
 
 const othersItems: NavItem[] = [
     {
-        icon: <PieChartIcon/>,
-        name: "Charts",
+        icon: <ChartNoAxesCombined />,
+        name: "Nubmers Graph",
         subItems: [
             {name: "Fréquence", path: "/bar-chart-frequency", pro: false},
             {name: "Retard", path: "/bar-chart-delay", pro: false},
@@ -59,6 +59,18 @@ const othersItems: NavItem[] = [
             {name: "Sorties", path: "/bar-chart-out", pro: false},
             {name: "Ecart", path: "/bar-chart-ecarts", pro: false},
             {name: "Report", path: "/bar-chart-report", pro: false},
+        ],
+    },
+
+    {
+        icon: <Star/>,
+        name: "Stars Graph",
+        subItems: [
+            {name: "Fréquence", path: "/bar-chart-star-frequency", pro: false},
+            {name: "Retard", path: "/bar-chart-star-delay", pro: false},
+            {name: "Progression", path: "/bar-chart-star-progression", pro: false},
+            {name: "Fréquence Récente", path: "/bar-chart-star-recent-frequency", pro: false},
+            {name: "Fréq_Période_Préc", path: "/bar-chart-star-frequency-previous-period", pro: false},
         ],
     },
 
