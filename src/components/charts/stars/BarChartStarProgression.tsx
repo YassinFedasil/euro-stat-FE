@@ -15,7 +15,7 @@ export default function BarChartStarProgression() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`http://localhost:8000/api/chart-progression?last=${last}`);
+            const res = await fetch(`http://localhost:8000/api/chart-progression-star?last=${last}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const resData: ProgressionBackendData[] = await res.json();
             const counts: Record<string, number> = {};

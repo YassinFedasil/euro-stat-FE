@@ -15,7 +15,7 @@ export default function BarChartStarFrequencyPreviousPeriod() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`http://localhost:8000/api/chart-frequency-previous-period?last=${last}`);
+            const res = await fetch(`http://localhost:8000/api/chart-frequency-previous-period-star?last=${last}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const resData: FrequencyPrevBackendData[] = await res.json();
 

@@ -15,7 +15,7 @@ export default function BarChartStarFrequency() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`http://localhost:8000/api/chart-frequency?last=${last}`);
+            const res = await fetch(`http://localhost:8000/api/chart-frequency-star?last=${last}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const resData: FrequencyBackendData[] = await res.json();
 

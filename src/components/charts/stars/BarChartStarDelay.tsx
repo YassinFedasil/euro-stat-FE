@@ -15,7 +15,7 @@ export default function BarChartStarDelay() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`http://localhost:8000/api/chart-delay?last=${last}`);
+            const res = await fetch(`http://localhost:8000/api/chart-delay-star?last=${last}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const resData: DelayBackendData[] = await res.json();
 
