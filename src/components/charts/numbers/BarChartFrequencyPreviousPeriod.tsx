@@ -39,7 +39,7 @@ export default function BarChartFrequencyPreviousPeriod() {
         chart: { type: "bar", height: 350, toolbar: { show: false }, fontFamily: "Outfit, sans-serif" },
         plotOptions: { bar: { horizontal: false, columnWidth: "40%", borderRadius: 5 } },
         dataLabels: { enabled: false },
-        xaxis: { categories, title: { text: "Fréquence précédente" } },
+        xaxis: { categories, title: { text: "Fréquence précédente Periodique" } },
         yaxis: { title: { text: "Nombre d'occurrences" } },
         grid: { yaxis: { lines: { show: true } } },
         tooltip: { y: { formatter: (val: number) => val.toString() } },

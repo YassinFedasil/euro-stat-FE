@@ -99,9 +99,9 @@ export default function NotificationDropdown() {
                   <span className="font-medium text-gray-800 dark:text-white/90">
                     Terry Franci
                   </span>
-                  <span> requests permission to change</span>
+                  <span>Stay focus</span>
                   <span className="font-medium text-gray-800 dark:text-white/90">
-                    Project - Nganter App
+                    You will win one day!
                   </span>
                 </span>
 
@@ -135,9 +135,9 @@ export default function NotificationDropdown() {
                   <span className="font-medium text-gray-800 dark:text-white/90">
                     Alena Franci
                   </span>
-                  <span>requests permission to change</span>
+                  <span>تذكر</span>
                   <span className="font-medium text-gray-800 dark:text-white/90">
-                    Project - Nganter App
+                    من جد وجد
                   </span>
                 </span>
 
@@ -171,9 +171,9 @@ export default function NotificationDropdown() {
                   <span className="font-medium text-gray-800 dark:text-white/90">
                     Jocelyn Kenter
                   </span>
-                  <span> requests permission to change</span>
+                  <span> Continue Yassin ... </span>
                   <span className="font-medium text-gray-800 dark:text-white/90">
-                    Project - Nganter App
+                    Tu vas gagner !
                   </span>
                 </span>
 
