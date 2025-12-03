@@ -17,3 +17,7 @@ git clone https://github.com/TailAdmin/free-react-tailwind-admin-dashboard.git
    ```bash
    npm run dev
    ```
+
+3. Run Docker:
+   ```bash
+   docker compose up --build

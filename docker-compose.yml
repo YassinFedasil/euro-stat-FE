@@ -1,0 +1,13 @@
+services:
+  euro_stat_fe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: euro_stat_fe
+    ports:
+      - "5173:80"  # ⚠️ 5173 côté host → 80 dans Nginx
+    restart: always
+
+networks:
+  default:
+    name: euro_stat
