@@ -4,7 +4,11 @@ import { ApexOptions } from "apexcharts";
 
 type DelayBackendData = { delay: string; count: number };
 
-export default function BarChartStarDelay() {
+type BarChartStarDelayProps = {
+    onTop10Change?: (top10: [string, number][]) => void;
+};
+
+export default function BarChartStarDelay({ onTop10Change }: BarChartStarDelayProps) {
     const [categories, setCategories] = useState<string[]>([]);
     const [seriesData, setSeriesData] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
@@ -30,6 +34,13 @@ export default function BarChartStarDelay() {
             const sortedKeys = Object.keys(counts).sort((a, b) => Number(a) - Number(b));
             setCategories(sortedKeys);
             setSeriesData(sortedKeys.map((k) => counts[k]));
+
+            // 🔹 Top 10 par occurrences
+            const top10 = Object.entries(counts)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 10) as [string, number][];
+            onTop10Change?.(top10);
+
         } catch (err: any) {
             setError(err.message || "Erreur lors du chargement des données");
         } finally {
@@ -56,10 +67,21 @@ export default function BarChartStarDelay() {
         <div>
             <div className="flex gap-2 items-center mb-4">
                 <label className="font-semibold">Derniers tirages : {lastDraws}</label>
-                <input type="range" min={1} max={100} value={lastDraws} onChange={(e) => setLastDraws(Number(e.target.value))} className="w-full" />
+                <input
+                    type="range"
+                    min={1}
+                    max={100}
+                    value={lastDraws}
+                    onChange={(e) => setLastDraws(Number(e.target.value))}
+                    className="w-full"
+                />
             </div>
+
             {error && <div className="text-red-600 mb-2">{error}</div>}
-            {loading ? <div>Chargement...</div> : (
+
+            {loading ? (
+                <div>Chargement...</div>
+            ) : (
                 <div className="max-w-full overflow-x-auto custom-scrollbar">
                     <div className="min-w-[600px]">
                         <Chart options={options} series={series} type="bar" height={350} />

@@ -2,9 +2,18 @@ import { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
-type FrequencyPrevBackendData = { frequency_previous_period: string; count: number };
+type FrequencyPrevBackendData = {
+    frequency_previous_period: string;
+    count: number;
+};
 
-export default function BarChartFrequencyPreviousPeriod() {
+type BarChartFrequencyPreviousPeriodProps = {
+    onTop10Change?: (top10: [string, number][]) => void;
+};
+
+export default function BarChartFrequencyPreviousPeriod({
+                                                            onTop10Change,
+                                                        }: BarChartFrequencyPreviousPeriodProps) {
     const [categories, setCategories] = useState<string[]>([]);
     const [seriesData, setSeriesData] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
@@ -15,7 +24,9 @@ export default function BarChartFrequencyPreviousPeriod() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`http://localhost:8000/api/chart-frequency-previous-period?last=${last}`);
+            const res = await fetch(
+                `http://localhost:8000/api/chart-frequency-previous-period?last=${last}`
+            );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const resData: FrequencyPrevBackendData[] = await res.json();
 
@@ -27,37 +38,83 @@ export default function BarChartFrequencyPreviousPeriod() {
                 counts[val] = (counts[val] || 0) + c;
             });
 
-            const sortedKeys = Object.keys(counts).sort((a, b) => Number(a) - Number(b));
+            // 🔹 Chart (ordre par valeur)
+            const sortedKeys = Object.keys(counts).sort(
+                (a, b) => Number(a) - Number(b)
+            );
             setCategories(sortedKeys);
             setSeriesData(sortedKeys.map((k) => counts[k]));
-        } catch (err: any) { setError(err.message || "Erreur"); } finally { setLoading(false); }
+
+            // 🔹 Top 10 par occurrences
+            const top10Data = Object.entries(counts)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 10) as [string, number][];
+
+            onTop10Change?.(top10Data);
+
+        } catch (err: any) {
+            setError(err.message || "Erreur");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    useEffect(() => { fetchFrequencyPrev(lastDraws); }, [lastDraws]);
+    useEffect(() => {
+        fetchFrequencyPrev(lastDraws);
+    }, [lastDraws]);
 
     const options: ApexOptions = {
-        chart: { type: "bar", height: 350, toolbar: { show: false }, fontFamily: "Outfit, sans-serif" },
-        plotOptions: { bar: { horizontal: false, columnWidth: "40%", borderRadius: 5 } },
+        chart: {
+            type: "bar",
+            height: 350,
+            toolbar: { show: false },
+            fontFamily: "Outfit, sans-serif",
+        },
+        plotOptions: {
+            bar: { horizontal: false, columnWidth: "40%", borderRadius: 5 },
+        },
         dataLabels: { enabled: false },
-        xaxis: { categories, title: { text: "Fréquence précédente Periodique" } },
+        xaxis: {
+            categories,
+            title: { text: "Fréquence précédente périodique" },
+        },
         yaxis: { title: { text: "Nombre d'occurrences" } },
         grid: { yaxis: { lines: { show: true } } },
         tooltip: { y: { formatter: (val: number) => val.toString() } },
         fill: { opacity: 1, colors: ["#465fff"] },
     };
+
     const series = [{ name: "Occurrences", data: seriesData }];
 
     return (
         <div>
             <div className="flex gap-2 items-center mb-4">
-                <label className="font-semibold">Derniers tirages : {lastDraws}</label>
-                <input type="range" min={1} max={100} value={lastDraws} onChange={(e) => setLastDraws(Number(e.target.value))} className="w-full" />
+                <label className="font-semibold">
+                    Derniers tirages : {lastDraws}
+                </label>
+                <input
+                    type="range"
+                    min={1}
+                    max={100}
+                    value={lastDraws}
+                    onChange={(e) => setLastDraws(Number(e.target.value))}
+                    className="w-full"
+                />
             </div>
+
             {error && <div className="text-red-600 mb-2">{error}</div>}
-            {loading ? <div>Chargement...</div> : (
+
+            {loading ? (
+                <div>Chargement...</div>
+            ) : (
                 <div className="max-w-full overflow-x-auto custom-scrollbar">
                     <div className="min-w-[600px]">
-                        <Chart options={options} series={series} type="bar" height={350} />
+                        <Chart
+                            options={options}
+                            series={series}
+                            type="bar"
+                            height={350}
+                        />
                     </div>
                 </div>
             )}

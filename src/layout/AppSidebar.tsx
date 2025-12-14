@@ -4,12 +4,12 @@ import {Link, useLocation} from "react-router";
 // Assume these icons are imported from an icon library
 import {
     CalenderIcon,
-    ChevronDownIcon,
+    ChevronDownIcon, DownloadIcon,
     GridIcon,
     HorizontaLDots,
 } from "../icons";
 import {useSidebar} from "../context/SidebarContext";
-import {ChartNoAxesCombined, Star} from "lucide-react";
+import {ChartNoAxesCombined, FileChartColumnIcon, Star} from "lucide-react";
 
 type NavItem = {
     name: string;
@@ -25,7 +25,12 @@ const navItems: NavItem[] = [
         path: "/",
     },
     {
-        icon: <CalenderIcon/>,
+        icon: <Star/>,
+        name: "Dashboard",
+        path: "/dashboard-stars",
+    },
+    {
+        icon: <FileChartColumnIcon/>,
         name: "Statistics",
         path: "/statistics",
     },
@@ -40,7 +45,7 @@ const navItems: NavItem[] = [
         path: "/stars",
     },
     {
-        icon: <CalenderIcon/>,
+        icon: <DownloadIcon/>,
         name: "Export",
         path: "/export",
     },

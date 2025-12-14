@@ -2,17 +2,20 @@ import { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
-// Adapter le type : out_reduc est string
 type OutBackendData = {
   out_reduc: string;
   count: number;
 };
 
-export default function BarChartOut() {
+type BarChartOutProps = {
+  onTop10Change?: (top10: [string, number][]) => void;
+};
+
+export default function BarChartOut({ onTop10Change }: BarChartOutProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [seriesData, setSeriesData] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
-  const [lastDraws, setLastDraws] = useState(20); // slider, défaut 20
+  const [lastDraws, setLastDraws] = useState(20);
   const [error, setError] = useState<string | null>(null);
 
   const fetchOuts = async (last: number) => {
@@ -25,7 +28,7 @@ export default function BarChartOut() {
 
       const resData: OutBackendData[] = await res.json();
       if (!Array.isArray(resData)) {
-        throw new Error("Données reçues invalides : " + JSON.stringify(resData));
+        throw new Error("Données reçues invalides");
       }
 
       // Compter occurrences
@@ -37,6 +40,7 @@ export default function BarChartOut() {
         counts[val] = (counts[val] || 0) + c;
       });
 
+      // 🔹 Chart : ordre naturel
       const sortedKeys = Object.keys(counts).sort((a, b) => {
         const nA = Number(a);
         const nB = Number(b);
@@ -45,6 +49,14 @@ export default function BarChartOut() {
 
       setCategories(sortedKeys);
       setSeriesData(sortedKeys.map((k) => counts[k]));
+
+      // 🔹 Top 10 par occurrences
+      const top10Data = Object.entries(counts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 10) as [string, number][];
+
+      onTop10Change?.(top10Data);
+
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Erreur lors du chargement des données");
@@ -72,7 +84,6 @@ export default function BarChartOut() {
 
   return (
       <div>
-        {/* Slider pour les derniers tirages */}
         <div className="flex gap-2 items-center mb-4">
           <label htmlFor="lastDraws" className="font-semibold">
             Derniers tirages : {lastDraws}
@@ -88,15 +99,13 @@ export default function BarChartOut() {
           />
         </div>
 
-        {/* Message d'erreur */}
         {error && <div className="text-red-600 mb-2">{error}</div>}
 
-        {/* Graphique */}
         {loading ? (
             <div>Chargement du graphique...</div>
         ) : (
             <div className="max-w-full overflow-x-auto custom-scrollbar">
-              <div id="chartOne" className="min-w-[600px]">
+              <div className="min-w-[600px]">
                 <Chart options={options} series={series} type="bar" height={350} />
               </div>
             </div>

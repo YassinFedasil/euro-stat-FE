@@ -24,6 +24,7 @@ import ProgressionStarChart from "./pages/Charts/Stars/ProgressionStarChart.tsx"
 import FrequencyStarChart from "./pages/Charts/Stars/FrequencyStarChart.tsx";
 import FrequencyPreviousPeriodStarChart from "./pages/Charts/Stars/FrequencyPreviousPeriodStarChart.tsx";
 import RecentFrequencyStarChart from "./pages/Charts/Stars/RecentFrequencyStarChart.tsx";
+import DashboardStars from "./pages/Dashboard/DashboardStars.tsx";
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
+            <Route index path="/dashboard-stars" element={<DashboardStars />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
