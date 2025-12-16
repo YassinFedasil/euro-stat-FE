@@ -25,6 +25,8 @@ import FrequencyStarChart from "./pages/Charts/Stars/FrequencyStarChart.tsx";
 import FrequencyPreviousPeriodStarChart from "./pages/Charts/Stars/FrequencyPreviousPeriodStarChart.tsx";
 import RecentFrequencyStarChart from "./pages/Charts/Stars/RecentFrequencyStarChart.tsx";
 import DashboardStars from "./pages/Dashboard/DashboardStars.tsx";
+import DataNumbers from "./pages/DataNumbers.tsx";
+import DataStars from "./pages/DataStars.tsx";
 
 export default function App() {
   return (
@@ -62,6 +64,9 @@ export default function App() {
             <Route path="/bar-chart-star-frequency" element={<FrequencyStarChart />} />
             <Route path="/bar-chart-star-frequency-previous-period" element={<FrequencyPreviousPeriodStarChart />} />
             <Route path="/bar-chart-star-recent-frequency" element={<RecentFrequencyStarChart />} />
+
+            <Route path="/data-numbers" element={<DataNumbers />} />
+            <Route path="/data-stars" element={<DataStars />} />
           </Route>
 
           {/* Auth Layout */}

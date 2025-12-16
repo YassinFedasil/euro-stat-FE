@@ -20,9 +20,7 @@ FROM nginx:alpine
 
 # Copier le build vers nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Exposer le port 80 (production)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
-
-# Démarrer nginx
+# Démarrer nginx automatiquement
 CMD ["nginx", "-g", "daemon off;"]

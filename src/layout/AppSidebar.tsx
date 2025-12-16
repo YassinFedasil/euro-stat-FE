@@ -9,7 +9,12 @@ import {
     HorizontaLDots,
 } from "../icons";
 import {useSidebar} from "../context/SidebarContext";
-import {ChartNoAxesCombined, FileChartColumnIcon, Star} from "lucide-react";
+import {
+    ChartNoAxesCombined,
+    FileChartColumnIcon,
+    FileJson,
+    Star
+} from "lucide-react";
 
 type NavItem = {
     name: string;
@@ -77,6 +82,18 @@ const othersItems: NavItem[] = [
             {name: "Fréquence Récente", path: "/bar-chart-star-recent-frequency", pro: false},
             {name: "Fréq_Période_Préc", path: "/bar-chart-star-frequency-previous-period", pro: false},
         ],
+    },
+
+    {
+        icon: <FileJson/>,
+        name: "Numbers",
+        path: "/data-numbers",
+    },
+
+    {
+        icon: <FileJson/>,
+        name: "Stars",
+        path: "/data-stars",
     },
 
 /**
