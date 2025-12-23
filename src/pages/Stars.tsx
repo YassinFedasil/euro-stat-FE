@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, {useCallback, useMemo, useState} from "react";
 
 type StarRow = {
     star: string;
@@ -27,12 +27,14 @@ const Stars: React.FC = () => {
     const [err, setErr] = useState<string | null>(null);
     const [data, setData] = useState<StarsDoc | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: keyof StarRow; direction: "asc" | "desc" } | null>(null);
+    const [selectedRows, setSelectedRows] = useState<string[]>([]); // plusieurs lignes sélectionnées
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
     const onExecute = useCallback(async () => {
         setErr(null);
         setData(null);
+        setSelectedRows([]);
 
         const value = mmjj.trim();
         if (!MMJJ_REGEX.test(value)) {
@@ -59,9 +61,9 @@ const Stars: React.FC = () => {
     const requestSort = (key: keyof StarRow) => {
         setSortConfig((prev) => {
             if (prev?.key === key) {
-                return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+                return {key, direction: prev.direction === "asc" ? "desc" : "asc"};
             }
-            return { key, direction: "asc" };
+            return {key, direction: "asc"};
         });
     };
 
@@ -72,7 +74,6 @@ const Stars: React.FC = () => {
             starsCopy.sort((a, b) => {
                 const valA = isNaN(Number(a[sortConfig.key])) ? a[sortConfig.key] : Number(a[sortConfig.key]);
                 const valB = isNaN(Number(b[sortConfig.key])) ? b[sortConfig.key] : Number(b[sortConfig.key]);
-
                 if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
                 if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
@@ -82,13 +83,26 @@ const Stars: React.FC = () => {
     }, [data, sortConfig]);
 
     const headers: { label: string; key: keyof StarRow }[] = [
-        { label: "Numéro", key: "star" },
-        { label: "Fréquence", key: "frequency" },
-        { label: "Retard", key: "delay" },
-        { label: "Progression", key: "progression" },
-        { label: "Fréq_Récente", key: "recent_frequency" },
-        { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
+        {label: "Numéro", key: "star"},
+        {label: "Fréquence", key: "frequency"},
+        {label: "Retard", key: "delay"},
+        {label: "Progression", key: "progression"},
+        {label: "Fréq_Récente", key: "recent_frequency"},
+        {label: "Fréq_Période_Préc", key: "frequency_previous_period"},
     ];
+
+    const handleDoubleClick = (star: string) => {
+        setSelectedRows((prev) => {
+            if (prev.includes(star)) {
+                // désélectionner si déjà sélectionné
+                return prev.filter((s) => s !== star);
+            } else if (prev.length < 5) {
+                // ajouter si moins de 5 sélectionnées
+                return [...prev, star];
+            }
+            return prev; // ignore si déjà 5
+        });
+    };
 
     return (
         <div className="p-4">
@@ -101,7 +115,9 @@ const Stars: React.FC = () => {
                     onChange={(e) => setMmjj(e.target.value)}
                     placeholder={defaultDate}
                     className="px-2 py-1 w-32 text-center border border-gray-300 rounded"
-                    onKeyDown={(e) => { if (e.key === "Enter") onExecute(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") onExecute();
+                    }}
                 />
                 <button
                     onClick={onExecute}
@@ -135,7 +151,7 @@ const Stars: React.FC = () => {
                         <table className="min-w-[820px] w-full border-collapse border border-gray-300">
                             <thead>
                             <tr className="bg-gray-100">
-                                {headers.map(({ label, key }) => (
+                                {headers.map(({label, key}) => (
                                     <th
                                         key={key}
                                         className="border border-gray-300 px-3 py-2 text-center cursor-pointer"
@@ -148,7 +164,11 @@ const Stars: React.FC = () => {
                             </thead>
                             <tbody>
                             {sortedStars.map((row) => (
-                                <tr key={row.star} className="hover:bg-gray-50">
+                                <tr
+                                    key={row.star}
+                                    onDoubleClick={() => handleDoubleClick(row.star)}
+                                    className={`${selectedRows.includes(row.star) ? "bg-yellow-300" : "hover:bg-gray-50"}`}
+                                >
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.star}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.frequency}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.delay}</td>
@@ -158,6 +178,7 @@ const Stars: React.FC = () => {
                                 </tr>
                             ))}
                             </tbody>
+
                         </table>
                     </div>
                 </>

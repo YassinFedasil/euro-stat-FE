@@ -21,7 +21,6 @@ type NumbersDoc = {
 const MMJJ_REGEX = /^\d{2}-\d{2}$/;
 
 const Numbers: React.FC = () => {
-
     const today = new Date();
     const pad = (n: number) => n.toString().padStart(2, "0");
     const defaultDate = `${pad(today.getDate())}-${pad(today.getMonth() + 1)}`;
@@ -31,12 +30,14 @@ const Numbers: React.FC = () => {
     const [err, setErr] = useState<string | null>(null);
     const [data, setData] = useState<NumbersDoc | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: keyof NumberRow; direction: "asc" | "desc" } | null>(null);
+    const [selectedRows, setSelectedRows] = useState<string[]>([]); // plusieurs lignes sélectionnées
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
     const onExecute = useCallback(async () => {
         setErr(null);
         setData(null);
+        setSelectedRows([]);
 
         const value = mmjj.trim();
         if (!MMJJ_REGEX.test(value)) {
@@ -63,9 +64,9 @@ const Numbers: React.FC = () => {
     const requestSort = (key: keyof NumberRow) => {
         setSortConfig((prev) => {
             if (prev?.key === key) {
-                return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+                return {key, direction: prev.direction === "asc" ? "desc" : "asc"};
             }
-            return { key, direction: "asc" };
+            return {key, direction: "asc"};
         });
     };
 
@@ -76,7 +77,6 @@ const Numbers: React.FC = () => {
             numbersCopy.sort((a, b) => {
                 const valA = isNaN(Number(a[sortConfig.key])) ? a[sortConfig.key] : Number(a[sortConfig.key]);
                 const valB = isNaN(Number(b[sortConfig.key])) ? b[sortConfig.key] : Number(b[sortConfig.key]);
-
                 if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
                 if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
@@ -86,16 +86,27 @@ const Numbers: React.FC = () => {
     }, [data, sortConfig]);
 
     const headers: { label: string; key: keyof NumberRow }[] = [
-        { label: "Numéro", key: "number" },
-        { label: "Fréquence", key: "frequency" },
-        { label: "Retard", key: "delay" },
-        { label: "Progression", key: "progression" },
-        { label: "Fréq_Récente", key: "recent_frequency" },
-        { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
-        { label: "Sorties", key: "sorties" },
-        { label: "Ecart", key: "ecart" },
-        { label: "Rapport_moyen", key: "rapport_moyen" },
+        {label: "Numéro", key: "number"},
+        {label: "Fréquence", key: "frequency"},
+        {label: "Retard", key: "delay"},
+        {label: "Progression", key: "progression"},
+        {label: "Fréq_Récente", key: "recent_frequency"},
+        {label: "Fréq_Période_Préc", key: "frequency_previous_period"},
+        {label: "Sorties", key: "sorties"},
+        {label: "Ecart", key: "ecart"},
+        {label: "Rapport_moyen", key: "rapport_moyen"},
     ];
+
+    const handleDoubleClick = (number: string) => {
+        setSelectedRows((prev) => {
+            if (prev.includes(number)) {
+                return prev.filter((n) => n !== number); // désélectionner si déjà sélectionné
+            } else if (prev.length < 5) {
+                return [...prev, number]; // ajouter si moins de 5
+            }
+            return prev; // ignore si déjà 5
+        });
+    };
 
     return (
         <div className="p-4">
@@ -108,7 +119,9 @@ const Numbers: React.FC = () => {
                     onChange={(e) => setMmjj(e.target.value)}
                     placeholder={defaultDate}
                     className="px-2 py-1 w-32 text-center border border-gray-300 rounded"
-                    onKeyDown={(e) => { if (e.key === "Enter") onExecute(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") onExecute();
+                    }}
                 />
                 <button
                     onClick={onExecute}
@@ -142,7 +155,7 @@ const Numbers: React.FC = () => {
                         <table className="min-w-[900px] w-full border-collapse border border-gray-300">
                             <thead>
                             <tr className="bg-gray-100">
-                                {headers.map(({ label, key }) => (
+                                {headers.map(({label, key}) => (
                                     <th
                                         key={key}
                                         className="border border-gray-300 px-3 py-2 text-center cursor-pointer"
@@ -155,7 +168,11 @@ const Numbers: React.FC = () => {
                             </thead>
                             <tbody>
                             {sortedNumbers.map((row) => (
-                                <tr key={row.number} className="hover:bg-gray-50">
+                                <tr
+                                    key={row.number}
+                                    onDoubleClick={() => handleDoubleClick(row.number)}
+                                    className={`${selectedRows.includes(row.number) ? "bg-yellow-300" : "hover:bg-gray-50"}`}
+                                >
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.number}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.frequency}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.delay}</td>
