@@ -19,9 +19,9 @@ type NumbersDoc = {
 };
 
 const MMJJ_REGEX = /^\d{2}-\d{2}$/;
+
 const Numbers: React.FC = () => {
 
-    // Génère la date du jour au format JJ-MM
     const today = new Date();
     const pad = (n: number) => n.toString().padStart(2, "0");
     const defaultDate = `${pad(today.getDate())}-${pad(today.getMonth() + 1)}`;
@@ -30,6 +30,7 @@ const Numbers: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [data, setData] = useState<NumbersDoc | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: keyof NumberRow; direction: "asc" | "desc" } | null>(null);
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
@@ -39,7 +40,7 @@ const Numbers: React.FC = () => {
 
         const value = mmjj.trim();
         if (!MMJJ_REGEX.test(value)) {
-            setErr("La date doit être au format MM-JJ (ex: 08-29).");
+            setErr("La date doit être au format JJ-MM (ex: 08-29).");
             return;
         }
 
@@ -58,6 +59,43 @@ const Numbers: React.FC = () => {
             setLoading(false);
         }
     }, [mmjj]);
+
+    const requestSort = (key: keyof NumberRow) => {
+        setSortConfig((prev) => {
+            if (prev?.key === key) {
+                return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+            }
+            return { key, direction: "asc" };
+        });
+    };
+
+    const sortedNumbers = useMemo(() => {
+        if (!data) return [];
+        const numbersCopy = [...data.numbers];
+        if (sortConfig) {
+            numbersCopy.sort((a, b) => {
+                const valA = isNaN(Number(a[sortConfig.key])) ? a[sortConfig.key] : Number(a[sortConfig.key]);
+                const valB = isNaN(Number(b[sortConfig.key])) ? b[sortConfig.key] : Number(b[sortConfig.key]);
+
+                if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+                if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+        return numbersCopy;
+    }, [data, sortConfig]);
+
+    const headers: { label: string; key: keyof NumberRow }[] = [
+        { label: "Numéro", key: "number" },
+        { label: "Fréquence", key: "frequency" },
+        { label: "Retard", key: "delay" },
+        { label: "Progression", key: "progression" },
+        { label: "Fréq_Récente", key: "recent_frequency" },
+        { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
+        { label: "Sorties", key: "sorties" },
+        { label: "Ecart", key: "ecart" },
+        { label: "Rapport_moyen", key: "rapport_moyen" },
+    ];
 
     return (
         <div className="p-4">
@@ -85,7 +123,7 @@ const Numbers: React.FC = () => {
             {/* Messages */}
             {!isValid && mmjj.length > 0 && (
                 <div className="text-red-700 mb-2">
-                    Format attendu: MM-JJ (ex: 08-29)
+                    Format attendu: JJ-MM (ex: 08-29)
                 </div>
             )}
             {err && (
@@ -104,22 +142,19 @@ const Numbers: React.FC = () => {
                         <table className="min-w-[900px] w-full border-collapse border border-gray-300">
                             <thead>
                             <tr className="bg-gray-100">
-                                {[
-                                    "Numéro","Fréquence","Retard","Progression",
-                                    "Fréq_Récente", "Fréq_Période_Préc",
-                                    "Sorties","Ecart","Rapport_moyen"
-                                ].map(h => (
+                                {headers.map(({ label, key }) => (
                                     <th
-                                        key={h}
-                                        className="border border-gray-300 px-3 py-2 text-center"
+                                        key={key}
+                                        className="border border-gray-300 px-3 py-2 text-center cursor-pointer"
+                                        onClick={() => requestSort(key)}
                                     >
-                                        {h}
+                                        {label} {sortConfig?.key === key ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
                                     </th>
                                 ))}
                             </tr>
                             </thead>
                             <tbody>
-                            {data.numbers.map((row) => (
+                            {sortedNumbers.map((row) => (
                                 <tr key={row.number} className="hover:bg-gray-50">
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.number}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.frequency}</td>
