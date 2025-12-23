@@ -30,7 +30,8 @@ const Numbers: React.FC = () => {
     const [err, setErr] = useState<string | null>(null);
     const [data, setData] = useState<NumbersDoc | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: keyof NumberRow; direction: "asc" | "desc" } | null>(null);
-    const [selectedRows, setSelectedRows] = useState<string[]>([]); // plusieurs lignes sélectionnées
+    const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [copied, setCopied] = useState(false);
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
@@ -100,37 +101,56 @@ const Numbers: React.FC = () => {
     const handleDoubleClick = (number: string) => {
         setSelectedRows((prev) => {
             if (prev.includes(number)) {
-                return prev.filter((n) => n !== number); // désélectionner si déjà sélectionné
+                return prev.filter((n) => n !== number);
             } else if (prev.length < 5) {
-                return [...prev, number]; // ajouter si moins de 5
+                return [...prev, number];
             }
-            return prev; // ignore si déjà 5
+            return prev;
         });
+    };
+
+    const copyTable = () => {
+        if (!data) return;
+        const headerLine = headers.map((h) => h.label).join("\t");
+        const rowsText = sortedNumbers.map((row) =>
+            headers.map((h) => row[h.key]).join("\t")
+        );
+        const textToCopy = [`Tirage: ${data._id}`, headerLine, ...rowsText].join("\n");
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
     };
 
     return (
         <div className="p-4">
-            {/* Ligne input + bouton */}
-            <div className="flex gap-2 items-center mb-3">
-                <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM)</label>
-                <input
-                    id="mmjj"
-                    value={mmjj}
-                    onChange={(e) => setMmjj(e.target.value)}
-                    placeholder={defaultDate}
-                    className="px-2 py-1 w-32 text-center border border-gray-300 rounded"
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") onExecute();
-                    }}
-                />
-                <button
-                    onClick={onExecute}
-                    disabled={!isValid || loading}
-                    className={`px-3 py-1 rounded font-semibold text-white ${isValid && !loading ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
-                    aria-busy={loading}
-                >
-                    {loading ? "Chargement..." : "Exécuter"}
-                </button>
+            {/* Ligne input + boutons */}
+            <div className="flex gap-2 items-center mb-3 justify-between">
+                <div className="flex gap-2 items-center">
+                    <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM)</label>
+                    <input
+                        id="mmjj"
+                        value={mmjj}
+                        onChange={(e) => setMmjj(e.target.value)}
+                        placeholder={defaultDate}
+                        className="px-2 py-1 w-32 text-center border border-gray-300 rounded"
+                        onKeyDown={(e) => { if (e.key === "Enter") onExecute(); }}
+                    />
+                    <button
+                        onClick={onExecute}
+                        disabled={!isValid || loading}
+                        className={`px-3 py-1 rounded font-semibold text-white ${isValid && !loading ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
+                    >
+                        {loading ? "Chargement..." : "Exécuter"}
+                    </button>
+                </div>
+                {data && (
+                    <button
+                        onClick={copyTable}
+                        className={`px-3 py-1 rounded font-semibold text-white ${copied ? "bg-green-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                    >
+                        {copied ? "Copié !" : "Copier le tableau"}
+                    </button>
+                )}
             </div>
 
             {/* Messages */}

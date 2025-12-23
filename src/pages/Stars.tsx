@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useState} from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 type StarRow = {
     star: string;
@@ -27,7 +27,8 @@ const Stars: React.FC = () => {
     const [err, setErr] = useState<string | null>(null);
     const [data, setData] = useState<StarsDoc | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: keyof StarRow; direction: "asc" | "desc" } | null>(null);
-    const [selectedRows, setSelectedRows] = useState<string[]>([]); // plusieurs lignes sélectionnées
+    const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [copied, setCopied] = useState(false);
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
@@ -61,9 +62,9 @@ const Stars: React.FC = () => {
     const requestSort = (key: keyof StarRow) => {
         setSortConfig((prev) => {
             if (prev?.key === key) {
-                return {key, direction: prev.direction === "asc" ? "desc" : "asc"};
+                return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
             }
-            return {key, direction: "asc"};
+            return { key, direction: "asc" };
         });
     };
 
@@ -83,50 +84,67 @@ const Stars: React.FC = () => {
     }, [data, sortConfig]);
 
     const headers: { label: string; key: keyof StarRow }[] = [
-        {label: "Numéro", key: "star"},
-        {label: "Fréquence", key: "frequency"},
-        {label: "Retard", key: "delay"},
-        {label: "Progression", key: "progression"},
-        {label: "Fréq_Récente", key: "recent_frequency"},
-        {label: "Fréq_Période_Préc", key: "frequency_previous_period"},
+        { label: "Numéro", key: "star" },
+        { label: "Fréquence", key: "frequency" },
+        { label: "Retard", key: "delay" },
+        { label: "Progression", key: "progression" },
+        { label: "Fréq_Récente", key: "recent_frequency" },
+        { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
     ];
 
     const handleDoubleClick = (star: string) => {
         setSelectedRows((prev) => {
             if (prev.includes(star)) {
-                // désélectionner si déjà sélectionné
                 return prev.filter((s) => s !== star);
-            } else if (prev.length < 5) {
-                // ajouter si moins de 5 sélectionnées
+            } else if (prev.length < 2) {
                 return [...prev, star];
             }
-            return prev; // ignore si déjà 5
+            return prev;
         });
+    };
+
+    const copyTable = () => {
+        if (!data) return;
+        const headerLine = headers.map((h) => h.label).join("\t");
+        const rowsText = sortedStars.map((row) =>
+            headers.map((h) => row[h.key]).join("\t")
+        );
+        const textToCopy = [`Tirage: ${data._id}`, headerLine, ...rowsText].join("\n");
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
     };
 
     return (
         <div className="p-4">
-            {/* Ligne input + bouton */}
-            <div className="flex gap-2 items-center mb-3">
-                <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM)</label>
-                <input
-                    id="mmjj"
-                    value={mmjj}
-                    onChange={(e) => setMmjj(e.target.value)}
-                    placeholder={defaultDate}
-                    className="px-2 py-1 w-32 text-center border border-gray-300 rounded"
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") onExecute();
-                    }}
-                />
-                <button
-                    onClick={onExecute}
-                    disabled={!isValid || loading}
-                    className={`px-3 py-1 rounded font-semibold text-white ${isValid && !loading ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
-                    aria-busy={loading}
-                >
-                    {loading ? "Chargement..." : "Exécuter"}
-                </button>
+            {/* Ligne input + boutons */}
+            <div className="flex gap-2 items-center mb-3 justify-between">
+                <div className="flex gap-2 items-center">
+                    <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM)</label>
+                    <input
+                        id="mmjj"
+                        value={mmjj}
+                        onChange={(e) => setMmjj(e.target.value)}
+                        placeholder={defaultDate}
+                        className="px-2 py-1 w-32 text-center border border-gray-300 rounded"
+                        onKeyDown={(e) => { if (e.key === "Enter") onExecute(); }}
+                    />
+                    <button
+                        onClick={onExecute}
+                        disabled={!isValid || loading}
+                        className={`px-3 py-1 rounded font-semibold text-white ${isValid && !loading ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
+                    >
+                        {loading ? "Chargement..." : "Exécuter"}
+                    </button>
+                </div>
+                {data && (
+                    <button
+                        onClick={copyTable}
+                        className={`px-3 py-1 rounded font-semibold text-white ${copied ? "bg-green-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                    >
+                        {copied ? "Copié !" : "Copier le tableau"}
+                    </button>
+                )}
             </div>
 
             {/* Messages */}
@@ -151,7 +169,7 @@ const Stars: React.FC = () => {
                         <table className="min-w-[820px] w-full border-collapse border border-gray-300">
                             <thead>
                             <tr className="bg-gray-100">
-                                {headers.map(({label, key}) => (
+                                {headers.map(({ label, key }) => (
                                     <th
                                         key={key}
                                         className="border border-gray-300 px-3 py-2 text-center cursor-pointer"
@@ -178,7 +196,6 @@ const Stars: React.FC = () => {
                                 </tr>
                             ))}
                             </tbody>
-
                         </table>
                     </div>
                 </>
