@@ -90,7 +90,7 @@ export default function BarChartFrequencyPreviousPeriod({
         <div>
             <div className="flex gap-2 items-center mb-4">
                 <label className="font-semibold">
-                    Derniers tirages : {lastDraws}
+                    {lastDraws}
                 </label>
                 <input
                     type="range"

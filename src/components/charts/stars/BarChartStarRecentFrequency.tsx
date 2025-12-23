@@ -67,7 +67,7 @@ export default function BarChartStarRecentFrequency({ onTop10Change }: BarChartS
     return (
         <div>
             <div className="flex gap-2 items-center mb-4">
-                <label className="font-semibold">Derniers tirages : {lastDraws}</label>
+                <label className="font-semibold">{lastDraws}</label>
                 <input
                     type="range"
                     min={1}

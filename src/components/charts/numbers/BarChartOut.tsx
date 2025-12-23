@@ -86,7 +86,7 @@ export default function BarChartOut({ onTop10Change }: BarChartOutProps) {
       <div>
         <div className="flex gap-2 items-center mb-4">
           <label htmlFor="lastDraws" className="font-semibold">
-            Derniers tirages : {lastDraws}
+            {lastDraws}
           </label>
           <input
               id="lastDraws"
