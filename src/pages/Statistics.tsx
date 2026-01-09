@@ -6,7 +6,7 @@ import {Trash2} from "lucide-react";
 const Statistics: React.FC = () => {
     const [draws, setDraws] = useState<IDrawData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [copyLast, setCopyLast] = useState<number>(1); // combien de tirages récentes à copier
+    const [copyLast, setCopyLast] = useState<number>(25); // combien de tirages récentes à copier
     const [copiedNumbers, setCopiedNumbers] = useState(false);
     const [copiedStars, setCopiedStars] = useState(false);
 

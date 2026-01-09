@@ -17,7 +17,7 @@ export default function BarChartFrequencyPreviousPeriod({
     const [categories, setCategories] = useState<string[]>([]);
     const [seriesData, setSeriesData] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
-    const [lastDraws, setLastDraws] = useState(20);
+    const [lastDraws, setLastDraws] = useState(25);
     const [error, setError] = useState<string | null>(null);
 
     const fetchFrequencyPrev = async (last: number) => {

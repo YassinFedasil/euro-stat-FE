@@ -109,7 +109,7 @@ const Stars: React.FC = () => {
         const rowsText = sortedStars.map((row) =>
             headers.map((h) => row[h.key]).join("\t")
         );
-        const textToCopy = [`Tirage: ${data._id}`, headerLine, ...rowsText].join("\n");
+        const textToCopy = [`Voici le tableau de statistiques actuelles des Etoiles:`, headerLine, ...rowsText].join("\n");
         navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         setTimeout(() => setCopied(false), 1000);

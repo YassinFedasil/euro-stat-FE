@@ -12,7 +12,7 @@ type ApiResponse = {
 
 export default function DataStars() {
     const [top, setTop] = useState(10);
-    const [last, setLast] = useState(20);
+    const [last, setLast] = useState(25);
     const [data, setData] = useState<ApiResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [copiedNumbers, setCopiedNumbers] = useState(false);

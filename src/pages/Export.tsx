@@ -1,6 +1,4 @@
 import {useState} from "react";
-import PageBreadcrumb from "../components/common/PageBreadCrumb";
-import PageMeta from "../components/common/PageMeta";
 import Input from "../components/form/input/InputField.tsx";
 import Button from "../components/ui/button/Button.tsx";
 
@@ -99,9 +97,13 @@ export default function Export() {
 
     return (
         <div>
-            <PageMeta title="Export" description="Export from Google Drive"/>
-            <PageBreadcrumb pageTitle="Export from Google Drive"/>
-
+            <a
+                href="https://drive.google.com/drive/folders/1ZN-VMaKEAQzArsJtoAkD8En2H7BW4WQy"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Export from Google Drive
+            </a>
             <div className="max-w-md mx-auto">
                 <form onSubmit={submitForm} className="space-y-2">
 

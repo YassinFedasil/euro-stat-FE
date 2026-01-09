@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchTopNumbers } from "../services/topXService";
 
 type TopValue = {
@@ -10,9 +10,29 @@ type ApiResponse = {
     numbers: Record<string, TopValue[]>;
 };
 
+// ✅ Desired display order (human readable)
+const ORDER = [
+    "FRÉQUENCE",
+    "RETARD",
+    "PROGRESSION",
+    "FRÉQUENCE RÉCENTE",
+    "FRÉQ. PÉRIODE PRÉC",
+    "SORTIE",
+    "ECARTS",
+    "RAPPORT",
+];
+
+// 🔐 Normalization helper (defensive)
+const normalizeKey = (key: string) =>
+    key
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Z0-9]/gi, "")
+        .toUpperCase();
+
 export default function DataNumbers() {
     const [top, setTop] = useState(10);
-    const [last, setLast] = useState(20);
+    const [last, setLast] = useState(25);
     const [data, setData] = useState<ApiResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [copiedNumbers, setCopiedNumbers] = useState(false);
@@ -27,10 +47,21 @@ export default function DataNumbers() {
         }
     };
 
-    // Recharge automatique quand top ou last change
     useEffect(() => {
         loadData();
     }, [top, last]);
+
+    // 🧠 Build backend-key lookup map (normalized → real key)
+    const keyMap = useMemo(() => {
+        if (!data) return {};
+
+        const map: Record<string, string> = {};
+        Object.keys(data.numbers).forEach((backendKey) => {
+            map[normalizeKey(backendKey)] = backendKey;
+        });
+
+        return map;
+    }, [data]);
 
     // ------------------- COPY -------------------
     const copyToClipboard = () => {
@@ -38,8 +69,14 @@ export default function DataNumbers() {
 
         let text = `Top ${top} (sur ${last} tirages)\n\n`;
 
-        Object.entries(data.numbers).forEach(([key, values]) => {
-            text += `${key.toUpperCase()}\n`;
+        ORDER.forEach((label) => {
+            const backendKey = keyMap[normalizeKey(label)];
+            if (!backendKey) return;
+
+            const values = data.numbers[backendKey];
+            if (!values) return;
+
+            text += `${label}\n`;
             values.forEach((v) => {
                 text += `- ${v.value} : ${v.count} fois\n`;
             });
@@ -57,9 +94,7 @@ export default function DataNumbers() {
             {/* Controls */}
             <div className="flex flex-wrap items-end gap-4">
                 <div>
-                    <label className="block text-sm font-medium">
-                        Top
-                    </label>
+                    <label className="block text-sm font-medium">Top</label>
                     <input
                         type="number"
                         min={1}
@@ -98,10 +133,12 @@ export default function DataNumbers() {
                 </h2>
 
                 <button
-                    className={`px-4 py-2 rounded text-white ${
-                        copiedNumbers ? "bg-green-600" : "bg-gray-700 hover:bg-gray-800"
-                    }`}
                     onClick={copyToClipboard}
+                    className={`px-4 py-2 rounded text-white ${
+                        copiedNumbers
+                            ? "bg-green-600"
+                            : "bg-gray-700 hover:bg-gray-800"
+                    }`}
                 >
                     Copier
                 </button>
@@ -112,30 +149,39 @@ export default function DataNumbers() {
 
             {!loading && data && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {Object.entries(data.numbers).map(([key, values]) => (
-                        <div
-                            key={key}
-                            className="border rounded-lg p-4 bg-white shadow-sm"
-                        >
-                            <h3 className="font-semibold capitalize mb-2">
-                                {key}
-                            </h3>
+                    {ORDER.map((label) => {
+                        const backendKey =
+                            keyMap[normalizeKey(label)];
+                        if (!backendKey) return null;
 
-                            <ul className="space-y-1 text-sm divide-y divide-gray-200">
-                                {values.map((v) => (
-                                    <li
-                                        key={v.value}
-                                        className="flex justify-between"
-                                    >
-                                        <span>{v.value}</span>
-                                        <span className="font-medium">
-                                            {v.count} fois
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+                        const values = data.numbers[backendKey];
+                        if (!values) return null;
+
+                        return (
+                            <div
+                                key={label}
+                                className="border rounded-lg p-4 bg-white shadow-sm"
+                            >
+                                <h3 className="font-semibold mb-2">
+                                    {label}
+                                </h3>
+
+                                <ul className="space-y-1 text-sm divide-y divide-gray-200">
+                                    {values.map((v) => (
+                                        <li
+                                            key={v.value}
+                                            className="flex justify-between"
+                                        >
+                                            <span>{v.value}</span>
+                                            <span className="font-medium">
+                                                {v.count} fois
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
