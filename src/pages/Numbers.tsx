@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useMemo, useState, useRef, useEffect} from "react";
 
 type NumberRow = {
     number: string;
@@ -31,7 +31,10 @@ const Numbers: React.FC = () => {
     const [data, setData] = useState<NumbersDoc | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: keyof NumberRow; direction: "asc" | "desc" } | null>(null);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [dragSelectedRows, setDragSelectedRows] = useState<string[]>([]);
     const [copied, setCopied] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const tableRef = useRef<HTMLDivElement>(null);
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
@@ -39,6 +42,7 @@ const Numbers: React.FC = () => {
         setErr(null);
         setData(null);
         setSelectedRows([]);
+        setDragSelectedRows([]);
 
         const value = mmjj.trim();
         if (!MMJJ_REGEX.test(value)) {
@@ -109,6 +113,59 @@ const Numbers: React.FC = () => {
         });
     };
 
+    // Gestion du drag pour sélection multiple
+    const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
+
+    const handleMouseDown = (index: number) => {
+        setIsDragging(true);
+        setDragStartIndex(index);
+
+        // Pour commencer avec une seule ligne sélectionnée par drag
+        const number = sortedNumbers[index].number;
+        if (!dragSelectedRows.includes(number)) {
+            setDragSelectedRows([number]);
+        }
+    };
+
+    const handleMouseEnter = (index: number) => {
+        if (isDragging && dragStartIndex !== null) {
+
+            const start = Math.min(dragStartIndex, index);
+            const end = Math.max(dragStartIndex, index);
+
+            const selected = sortedNumbers
+                .slice(start, end + 1)
+                .map(row => row.number);
+
+            setDragSelectedRows(selected);
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        setDragStartIndex(null);
+    };
+
+    // Gestion du double-clic en dehors du tableau pour désélectionner
+    const handleContainerDoubleClick = (e: React.MouseEvent) => {
+        if (e.target === tableRef.current || tableRef.current?.contains(e.target as Node)) {
+            // Si le clic est sur le tableau lui-même, ne rien faire
+            return;
+        }
+        setDragSelectedRows([]);
+    };
+
+    // Gestionnaire global pour la souris
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            setIsDragging(false);
+            setDragStartIndex(null);
+        };
+
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    }, []);
+
     const copyTable = () => {
         if (!data) return;
         const headerLine = headers.map((h) => h.label).join("\t");
@@ -121,8 +178,19 @@ const Numbers: React.FC = () => {
         setTimeout(() => setCopied(false), 1000);
     };
 
+    // Déterminer la couleur de fond
+    const getRowBackground = (number: string) => {
+        if (selectedRows.includes(number)) {
+            return "bg-yellow-300";
+        }
+        if (dragSelectedRows.includes(number)) {
+            return "bg-cyan-100";
+        }
+        return "hover:bg-gray-50";
+    };
+
     return (
-        <div className="p-4">
+        <div className="p-4" onDoubleClick={handleContainerDoubleClick}>
             {/* Ligne input + boutons */}
             <div className="flex gap-2 items-center mb-3 justify-between">
                 <div className="flex gap-2 items-center">
@@ -171,7 +239,16 @@ const Numbers: React.FC = () => {
                     <div className="mb-2 text-blue-600">
                         <strong>Tirage:</strong> {data._id}
                     </div>
-                    <div className="overflow-x-auto">
+                    <div
+                        ref={tableRef}
+                        className="overflow-x-auto"
+                        onMouseLeave={() => {
+                            if (isDragging) {
+                                setIsDragging(false);
+                                setDragStartIndex(null);
+                            }
+                        }}
+                    >
                         <table className="min-w-[900px] w-full border-collapse border border-gray-300">
                             <thead>
                             <tr className="bg-gray-100">
@@ -187,11 +264,18 @@ const Numbers: React.FC = () => {
                             </tr>
                             </thead>
                             <tbody>
-                            {sortedNumbers.map((row) => (
+                            {sortedNumbers.map((row, index) => (
                                 <tr
                                     key={row.number}
                                     onDoubleClick={() => handleDoubleClick(row.number)}
-                                    className={`${selectedRows.includes(row.number) ? "bg-yellow-300" : "hover:bg-gray-50"}`}
+                                    onMouseDown={() => handleMouseDown(index)}
+                                    onMouseEnter={() => handleMouseEnter(index)}
+                                    onMouseUp={handleMouseUp}
+                                    className={`
+                                        ${getRowBackground(row.number)}
+                                        ${isDragging ? "cursor-crosshair" : "cursor-default"}
+                                        select-none
+                                    `}
                                 >
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.number}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.frequency}</td>
