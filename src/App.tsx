@@ -27,6 +27,7 @@ import RecentFrequencyStarChart from "./pages/Charts/Stars/RecentFrequencyStarCh
 import DashboardStars from "./pages/Dashboard/DashboardStars.tsx";
 import DataNumbers from "./pages/DataNumbers.tsx";
 import DataStars from "./pages/DataStars.tsx";
+import EuroAnimation from "./pages/EuroAnimation.tsx";
 
 export default function App() {
   return (
@@ -67,6 +68,8 @@ export default function App() {
 
             <Route path="/data-numbers" element={<DataNumbers />} />
             <Route path="/data-stars" element={<DataStars />} />
+
+            <Route path="/dollar" element={<EuroAnimation />} />
           </Route>
 
           {/* Auth Layout */}
