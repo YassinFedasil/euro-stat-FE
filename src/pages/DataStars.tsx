@@ -43,6 +43,14 @@ export default function DataStars() {
             values.forEach((v) => {
                 text += `- ${v.value} : ${v.count} fois\n`;
             });
+
+            // 🔹 Ajouter l'explication pour FRÉQUENCE
+            if (key.toUpperCase() === "FRÉQUENCE") {
+                text += `\nExemple : 7x1 | 9x1 signifie :\n`;
+                text += `- Dans ce tirage, 1 nombre est dans la tranche 7,xx\n`;
+                text += `- Et 1 nombre est dans la tranche 9,xx\n`;
+            }
+
             text += "\n";
         });
 

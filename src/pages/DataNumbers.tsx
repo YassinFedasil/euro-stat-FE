@@ -80,6 +80,14 @@ export default function DataNumbers() {
             values.forEach((v) => {
                 text += `- ${v.value} : ${v.count} fois\n`;
             });
+
+            // 🔹 Ajouter l'explication pour FRÉQUENCE
+            if (label.toUpperCase() === "FRÉQUENCE") {
+                text += `\nExemple : 4x2 | 5x3 signifie :\n`;
+                text += `- Dans ce tirage, 2 nombres sont dans la tranche 4,xx\n`;
+                text += `- Et 3 nombres sont dans la tranche 5,xx\n`;
+            }
+
             text += "\n";
         });
 
