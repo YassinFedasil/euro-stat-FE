@@ -83,9 +83,8 @@ export default function DataNumbers() {
 
             // 🔹 Ajouter l'explication pour FRÉQUENCE
             if (label.toUpperCase() === "FRÉQUENCE") {
-                text += `\nExemple : 4x2 | 5x3 signifie :\n`;
-                text += `- Dans ce tirage, 2 nombres sont dans la tranche 4,xx\n`;
-                text += `- Et 3 nombres sont dans la tranche 5,xx\n`;
+                text += `\n- Exemple 1 : "4x2 | 5x3 : 10 fois" Signifie que 2 nombres sont dans la tranche 4,xx (entre 4,01% et 4,99%) et 3 nombres sont dans la tranche 5,xx et cette répartition ("4x2 | 5x3") est sortie 10 fois dans les 25 derniers tirages.\n`;
+                text += `- Exemple 2 : "5x5 : 2 fois" Signifie que 5 nombres sont dans la tranche 5,xx (entre 5,01% et 5,99%) et cette répartition ("5x5") est sortie 2 fois dans les 25 derniers tirages.\n`;
             }
 
             text += "\n";
