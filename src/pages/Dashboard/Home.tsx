@@ -7,6 +7,9 @@ import BarChartFrequencyPreviousPeriod from "../../components/charts/numbers/Bar
 import BarChartProgression from "../../components/charts/numbers/BarChartProgression.tsx";
 import BarChartRecentFrequency from "../../components/charts/numbers/BarChartRecentFrequency.tsx";
 import BarChartDelay from "../../components/charts/numbers/BarChartDelay.tsx";
+import BarChartDelayRange from "../../components/charts/numbers/BarChartDelayRange.tsx";
+import BarChartEcartsRange from "../../components/charts/numbers/BarChartEcartsRange.tsx";
+import BarChartOutRange from "../../components/charts/numbers/BarChartOutRange.tsx";
 
 export default function Home() {
     return (
@@ -37,6 +40,10 @@ export default function Home() {
                         <div className="w-full scale-100">
                             <BarChartFrequency/>
                         </div>
+                        <div className="w-full scale-100">
+                            <BarChartEcartsRange/>
+                        </div>
+
                     </div>
 
                     {/* Colonne 2 */}
@@ -55,6 +62,14 @@ export default function Home() {
 
                         <div className="w-full scale-100">
                             <BarChartDelay/>
+                        </div>
+
+                        <div className="w-full scale-100">
+                            <BarChartDelayRange/>
+                        </div>
+
+                        <div className="w-full scale-100">
+                            <BarChartOutRange/>
                         </div>
                     </div>
                 </div>

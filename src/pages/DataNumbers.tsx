@@ -13,12 +13,15 @@ type ApiResponse = {
 // ✅ Desired display order (human readable)
 const ORDER = [
     "FRÉQUENCE",
+    "RETARD RANGE",
     "RETARD",
     "PROGRESSION",
     "FRÉQUENCE RÉCENTE",
     "FRÉQ. PÉRIODE PRÉC",
     "SORTIE",
+    "SORTIE RANGE",
     "ECARTS",
+    "ECARTS RANGE",
     "RAPPORT",
 ];
 
@@ -83,8 +86,26 @@ export default function DataNumbers() {
 
             // 🔹 Ajouter l'explication pour FRÉQUENCE
             if (label.toUpperCase() === "FRÉQUENCE") {
-                text += `\n- Exemple 1 : "4x2 | 5x3 : 10 fois" Signifie que 2 nombres sont dans la tranche 4,xx (entre 4,01% et 4,99%) et 3 nombres sont dans la tranche 5,xx et cette répartition ("4x2 | 5x3") est sortie 10 fois dans les 25 derniers tirages.\n`;
-                text += `- Exemple 2 : "5x5 : 2 fois" Signifie que 5 nombres sont dans la tranche 5,xx (entre 5,01% et 5,99%) et cette répartition ("5x5") est sortie 2 fois dans les 25 derniers tirages.\n`;
+                text += `\n- Exemple 1 : "4x2 | 5x3 : 10 fois" Signifie que 2 nombres sont dans la tranche 4,xx (entre 4,01% et 4,99%) et 3 nombres sont dans la tranche 5,xx et cette répartition ("4x2 | 5x3") est sortie 10 fois dans les ${last} derniers tirages.\n`;
+                text += `- Exemple 2 : "5x5 : 2 fois" Signifie que 5 nombres sont dans la tranche 5,xx (entre 5,01% et 5,99%) et cette répartition ("5x5") est sortie 2 fois dans les ${last} derniers tirages.\n`;
+            }
+
+            // 🔹 Ajouter l'explication pour RETARD RANGE
+            if (label.toUpperCase() === "RETARD RANGE") {
+                text += `\n- Exemple : "[0-5]x2 | [6-10]x3 : 3 fois" Signifie que 2 nombres ont un retard entre 0 et 5, et 3 nombres ont un retard entre 6 et 10, et cette répartition est sortie 3 fois dans les ${last} derniers tirages.\n`;
+                text += `- Les tranches sont : [0-5], [6-10], [11+]\n`;
+            }
+
+            // 🔹 Ajouter l'explication pour ECARTS RANGE
+            if (label.toUpperCase() === "ECARTS RANGE") {
+                text += `\n- Exemple : "[0-5]x2 | [6-10]x3 : 9 fois" Signifie que 2 écarts sont entre 0 et 5, et 3 écarts sont entre 6 et 10, et cette répartition est sortie 9 fois dans les ${last} derniers tirages.\n`;
+                text += `- Les tranches sont : [0-5], [6-10], [11+]\n`;
+            }
+
+            // 🔹 Ajouter l'explication pour SORTIE RANGE
+            if (label.toUpperCase() === "SORTIE RANGE") {
+                text += `\n- Exemple : "[80-89]x1 | [90-99]x1 | [100-109]x3 : 9 fois" Signifie que 1 sortie est dans la tranche 80-89, 1 sortie dans la tranche 90-99, et 3 sorties dans la tranche 100-109, et cette répartition est sortie 9 fois dans les ${last} derniers tirages.\n`;
+                text += `- Les tranches sont dynamiques par pas de 10 : [50-59], [60-69], [70-79], [80-89], [90-99], [100-109], [110-119], ...\n`;
             }
 
             text += "\n";
@@ -92,7 +113,7 @@ export default function DataNumbers() {
 
         navigator.clipboard.writeText(text);
         setCopiedNumbers(true);
-        setTimeout(() => setCopiedNumbers(false), 300);
+        setTimeout(() => setCopiedNumbers(false), 3000);
     };
     // --------------------------------------------
 
@@ -147,7 +168,7 @@ export default function DataNumbers() {
                             : "bg-gray-700 hover:bg-gray-800"
                     }`}
                 >
-                    Copier
+                    {copiedNumbers ? "Copié !" : "Copier"}
                 </button>
             </div>
 
@@ -167,20 +188,25 @@ export default function DataNumbers() {
                         return (
                             <div
                                 key={label}
-                                className="border rounded-lg p-4 bg-white shadow-sm"
+                                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
                             >
-                                <h3 className="font-semibold mb-2">
-                                    {label}
+                                <h3 className="font-semibold mb-2 flex items-center justify-between">
+                                    <span>{label}</span>
+                                    {label === "RETARD RANGE" && (
+                                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                            [0-5] [6-10] [11+]
+                                        </span>
+                                    )}
                                 </h3>
 
                                 <ul className="space-y-1 text-sm divide-y divide-gray-200">
                                     {values.map((v) => (
                                         <li
                                             key={v.value}
-                                            className="flex justify-between"
+                                            className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
                                         >
-                                            <span>{v.value}</span>
-                                            <span className="font-medium">
+                                            <span className="font-mono text-xs md:text-sm">{v.value}</span>
+                                            <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
                                                 {v.count} fois
                                             </span>
                                         </li>

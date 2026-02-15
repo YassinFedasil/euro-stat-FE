@@ -28,6 +28,9 @@ import DashboardStars from "./pages/Dashboard/DashboardStars.tsx";
 import DataNumbers from "./pages/DataNumbers.tsx";
 import DataStars from "./pages/DataStars.tsx";
 import EuroAnimation from "./pages/EuroAnimation.tsx";
+import DelayChartRange from "./pages/Charts/Numbers/DelayChartRange.tsx";
+import EcartChartRange from "./pages/Charts/Numbers/EcartChartRange.tsx";
+import OutChartRange from "./pages/Charts/Numbers/OutChartRange.tsx";
 
 export default function App() {
   return (
@@ -52,10 +55,13 @@ export default function App() {
             {/* Charts Numbers*/}
             <Route path="/bar-chart-report" element={<ReportChart />} />
             <Route path="/bar-chart-out" element={<OutChart />} />
+            <Route path="/bar-chart-out-range" element={<OutChartRange />} />
             <Route path="/bar-chart-delay" element={<DelayChart />} />
+            <Route path="/bar-chart-delay-range" element={<DelayChartRange />} />
             <Route path="/bar-chart-progression" element={<ProgressionChart />} />
             <Route path="/bar-chart-frequency" element={<FrequencyChart />} />
             <Route path="/bar-chart-ecarts" element={<EcartChart />} />
+            <Route path="/bar-chart-ecarts-range" element={<EcartChartRange />} />
             <Route path="/bar-chart-frequency-previous-period" element={<FrequencyPreviousPeriodChart />} />
             <Route path="/bar-chart-recent-frequency" element={<RecentFrequencyChart />} />
 
