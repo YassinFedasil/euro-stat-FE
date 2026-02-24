@@ -154,7 +154,7 @@ export default function BarChartDelayRange({ onTop10Change }: BarChartDelayRange
             {/* 🔥 SLIDER */}
             <div className="flex gap-2 items-center mb-4">
                 <label className="font-semibold">
-                    {effectiveLastDraws} derniers tirages
+                    {effectiveLastDraws}
                 </label>
 
                 <input

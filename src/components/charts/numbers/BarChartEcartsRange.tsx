@@ -29,15 +29,10 @@ export default function BarChartEcartsRange({ onTop10Change }: BarChartEcartsRan
 
     const [error, setError] = useState<string | null>(null);
 
-    /* 🔥 AUTO RESET SI GLOBAL CHANGE */
-    const [prevGlobal, setPrevGlobal] = useState(globalLastDraws);
-
+    /* 🔥 RESET SIMPLE (comme Report) */
     useEffect(() => {
-        if (globalLastDraws !== prevGlobal) {
-            setLocalLastDraws(null);
-            setPrevGlobal(globalLastDraws);
-        }
-    }, [globalLastDraws, prevGlobal]);
+        setLocalLastDraws(null);
+    }, [globalLastDraws]);
 
     const fetchEcartsRange = async (last: number) => {
         setLoading(true);
@@ -49,23 +44,17 @@ export default function BarChartEcartsRange({ onTop10Change }: BarChartEcartsRan
 
             const resData: EcartsRangeBackendData[] = await res.json();
 
-            if (!resData || resData.length === 0) {
-                setCategories([]);
-                setSeriesData([]);
-                return;
-            }
-
             const ranges = resData.map(item => item.ecart_range);
             const counts = resData.map(item => item.count);
 
             setCategories(ranges);
             setSeriesData(counts);
 
-            const top10Data = resData
+            const top10 = resData
                 .map(item => [item.ecart_range, item.count] as [string, number])
                 .slice(0, 10);
 
-            onTop10Change?.(top10Data);
+            onTop10Change?.(top10);
 
         } catch (err: any) {
             setError(err.message || "Erreur lors du chargement des données");
@@ -83,74 +72,43 @@ export default function BarChartEcartsRange({ onTop10Change }: BarChartEcartsRan
         return () => clearTimeout(timer);
     }, [effectiveLastDraws]);
 
+    /* 🔥 STYLE IDENTIQUE AU REPORT */
     const options: ApexOptions = {
         chart: {
             type: "bar",
-            height: 450,
+            height: 350,
             toolbar: { show: false },
             fontFamily: "Outfit, sans-serif"
         },
         plotOptions: {
             bar: {
                 horizontal: false,
-                columnWidth: "60%",
-                borderRadius: 5,
-                distributed: true
+                columnWidth: "40%",
+                borderRadius: 5
             }
         },
         dataLabels: {
-            enabled: true,
-            style: {
-                fontSize: '12px',
-                colors: ['#304758']
-            },
-            offsetY: -20,
-            formatter: (val: number) => val.toString()
+            enabled: false
         },
         xaxis: {
             categories,
-            title: { text: "Tranches d'écarts" },
-            labels: {
-                rotate: -45,
-                rotateAlways: true,
-                style: {
-                    fontSize: '11px',
-                    fontWeight: 500
-                }
-            },
-            tickPlacement: "on",
-            axisTicks: { show: true },
-            axisBorder: { show: true }
+            title: { text: "Tranches d'écarts" }
         },
         yaxis: {
-            title: { text: "Nombre d'occurrences" },
-            min: 0
+            title: { text: "Nombre d'occurrences" }
         },
         grid: {
             yaxis: { lines: { show: true } }
         },
         tooltip: {
             y: {
-                formatter: (val: number) => val.toString() + " fois"
+                formatter: (val: number) => val.toString()
             }
         },
         fill: {
             opacity: 1,
             colors: ["#465fff"]
-        },
-        colors: [
-            "#465fff",
-            "#ff8f6b",
-            "#5ac8fa",
-            "#34c759",
-            "#ff2d55",
-            "#af52de",
-            "#ff9f0a",
-            "#bf5b4d",
-            "#66a3ff",
-            "#ff6b6b"
-        ],
-        legend: { show: false }
+        }
     };
 
     const series = [{
@@ -162,9 +120,7 @@ export default function BarChartEcartsRange({ onTop10Change }: BarChartEcartsRan
         <div>
             {/* 🔥 SLIDER */}
             <div className="flex gap-2 items-center mb-4">
-                <label className="font-semibold whitespace-nowrap">
-                    {effectiveLastDraws} derniers tirages
-                </label>
+                <label className="font-semibold">{effectiveLastDraws}</label>
 
                 <input
                     type="range"
@@ -188,19 +144,11 @@ export default function BarChartEcartsRange({ onTop10Change }: BarChartEcartsRan
             {error && <div className="text-red-600 mb-2">{error}</div>}
 
             {loading ? (
-                <div className="flex justify-center items-center h-[450px]">
-                    Chargement...
-                </div>
+                <div>Chargement du graphique...</div>
             ) : (
                 <div className="max-w-full overflow-x-auto custom-scrollbar">
-                    <div className="min-w-[900px]">
-                        {categories.length > 0 ? (
-                            <Chart options={options} series={series} type="bar" height={450} />
-                        ) : (
-                            <div className="flex justify-center items-center h-[450px] text-gray-500">
-                                Aucune donnée disponible
-                            </div>
-                        )}
+                    <div className="min-w-[600px]">
+                        <Chart options={options} series={series} type="bar" height={350} />
                     </div>
                 </div>
             )}
