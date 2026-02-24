@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
@@ -8,12 +9,30 @@ type BarChartRecentFrequencyProps = {
     onTop10Change?: (top10: [string, number][]) => void;
 };
 
+/* 🔥 CONTEXT GLOBAL */
+type LayoutContext = {
+    globalLastDraws: number;
+};
+
 export default function BarChartRecentFrequency({ onTop10Change }: BarChartRecentFrequencyProps) {
+    const { globalLastDraws } = useOutletContext<LayoutContext>();
+
     const [categories, setCategories] = useState<string[]>([]);
     const [seriesData, setSeriesData] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
-    const [lastDraws, setLastDraws] = useState(25);
+
+    /* 🔥 LOCAL OVERRIDE */
+    const [localLastDraws, setLocalLastDraws] = useState<number | null>(null);
+
+    /* 🔥 EFFECTIVE VALUE */
+    const effectiveLastDraws = localLastDraws ?? globalLastDraws;
+
     const [error, setError] = useState<string | null>(null);
+
+    /* 🔥 RESET AUTO */
+    useEffect(() => {
+        setLocalLastDraws(null);
+    }, [globalLastDraws]);
 
     const fetchRecentFrequency = async (last: number) => {
         setLoading(true);
@@ -26,6 +45,7 @@ export default function BarChartRecentFrequency({ onTop10Change }: BarChartRecen
             const resData: RecentFreqBackendData[] = await res.json();
 
             const counts: Record<string, number> = {};
+
             resData.forEach((doc) => {
                 const val = doc.recent_frequency;
                 const c = doc.count ?? 1;
@@ -33,12 +53,12 @@ export default function BarChartRecentFrequency({ onTop10Change }: BarChartRecen
                 counts[val] = (counts[val] || 0) + c;
             });
 
-            // 🔹 Chart : tri naturel
+            // 🔹 Chart
             const sortedKeys = Object.keys(counts).sort((a, b) => Number(a) - Number(b));
             setCategories(sortedKeys);
             setSeriesData(sortedKeys.map((k) => counts[k]));
 
-            // 🔹 Top 10 par occurrences
+            // 🔹 Top 10
             const top10 = Object.entries(counts)
                 .sort(([, a], [, b]) => b - a)
                 .slice(0, 10) as [string, number][];
@@ -52,11 +72,25 @@ export default function BarChartRecentFrequency({ onTop10Change }: BarChartRecen
         }
     };
 
-    useEffect(() => { fetchRecentFrequency(lastDraws); }, [lastDraws]);
+    /* 🔥 DEBOUNCE */
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchRecentFrequency(effectiveLastDraws);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [effectiveLastDraws]);
 
     const options: ApexOptions = {
-        chart: { type: "bar", height: 350, toolbar: { show: false }, fontFamily: "Outfit, sans-serif" },
-        plotOptions: { bar: { horizontal: false, columnWidth: "40%", borderRadius: 5 } },
+        chart: {
+            type: "bar",
+            height: 350,
+            toolbar: { show: false },
+            fontFamily: "Outfit, sans-serif"
+        },
+        plotOptions: {
+            bar: { horizontal: false, columnWidth: "40%", borderRadius: 5 }
+        },
         dataLabels: { enabled: false },
         xaxis: { categories, title: { text: "Fréquence récente" } },
         yaxis: { title: { text: "Nombre d'occurrences" } },
@@ -69,16 +103,27 @@ export default function BarChartRecentFrequency({ onTop10Change }: BarChartRecen
 
     return (
         <div>
+            {/* 🔥 SLIDER */}
             <div className="flex gap-2 items-center mb-4">
-                <label className="font-semibold">{lastDraws}</label>
+                <label className="font-semibold">{effectiveLastDraws}</label>
+
                 <input
                     type="range"
                     min={1}
                     max={100}
-                    value={lastDraws}
-                    onChange={(e) => setLastDraws(Number(e.target.value))}
+                    value={effectiveLastDraws}
+                    onChange={(e) => setLocalLastDraws(Number(e.target.value))}
                     className="w-full"
                 />
+
+                {localLastDraws !== null && (
+                    <button
+                        onClick={() => setLocalLastDraws(null)}
+                        className="text-xs text-blue-500 whitespace-nowrap"
+                    >
+                        Use global
+                    </button>
+                )}
             </div>
 
             {error && <div className="text-red-600 mb-2">{error}</div>}

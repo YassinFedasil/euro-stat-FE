@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
@@ -11,26 +12,47 @@ type BarChartFrequencyPreviousPeriodProps = {
     onTop10Change?: (top10: [string, number][]) => void;
 };
 
+/* 🔥 CONTEXT GLOBAL */
+type LayoutContext = {
+    globalLastDraws: number;
+};
+
 export default function BarChartFrequencyPreviousPeriod({
                                                             onTop10Change,
                                                         }: BarChartFrequencyPreviousPeriodProps) {
+    const { globalLastDraws } = useOutletContext<LayoutContext>();
+
     const [categories, setCategories] = useState<string[]>([]);
     const [seriesData, setSeriesData] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
-    const [lastDraws, setLastDraws] = useState(25);
+
+    /* 🔥 LOCAL OVERRIDE */
+    const [localLastDraws, setLocalLastDraws] = useState<number | null>(null);
+
+    /* 🔥 EFFECTIVE VALUE */
+    const effectiveLastDraws = localLastDraws ?? globalLastDraws;
+
     const [error, setError] = useState<string | null>(null);
+
+    /* 🔥 RESET AUTO */
+    useEffect(() => {
+        setLocalLastDraws(null);
+    }, [globalLastDraws]);
 
     const fetchFrequencyPrev = async (last: number) => {
         setLoading(true);
         setError(null);
+
         try {
             const res = await fetch(
                 `http://localhost:8000/api/chart-frequency-previous-period?last=${last}`
             );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
             const resData: FrequencyPrevBackendData[] = await res.json();
 
             const counts: Record<string, number> = {};
+
             resData.forEach((doc) => {
                 const val = doc.frequency_previous_period;
                 const c = doc.count ?? 1;
@@ -38,14 +60,15 @@ export default function BarChartFrequencyPreviousPeriod({
                 counts[val] = (counts[val] || 0) + c;
             });
 
-            // 🔹 Chart (ordre par valeur)
+            // 🔹 Chart
             const sortedKeys = Object.keys(counts).sort(
                 (a, b) => Number(a) - Number(b)
             );
+
             setCategories(sortedKeys);
             setSeriesData(sortedKeys.map((k) => counts[k]));
 
-            // 🔹 Top 10 par occurrences
+            // 🔹 Top 10
             const top10Data = Object.entries(counts)
                 .sort(([, a], [, b]) => b - a)
                 .slice(0, 10) as [string, number][];
@@ -59,9 +82,14 @@ export default function BarChartFrequencyPreviousPeriod({
         }
     };
 
+    /* 🔥 DEBOUNCE */
     useEffect(() => {
-        fetchFrequencyPrev(lastDraws);
-    }, [lastDraws]);
+        const timer = setTimeout(() => {
+            fetchFrequencyPrev(effectiveLastDraws);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [effectiveLastDraws]);
 
     const options: ApexOptions = {
         chart: {
@@ -88,18 +116,27 @@ export default function BarChartFrequencyPreviousPeriod({
 
     return (
         <div>
+            {/* 🔥 SLIDER */}
             <div className="flex gap-2 items-center mb-4">
-                <label className="font-semibold">
-                    {lastDraws}
-                </label>
+                <label className="font-semibold">{effectiveLastDraws}</label>
+
                 <input
                     type="range"
                     min={1}
                     max={100}
-                    value={lastDraws}
-                    onChange={(e) => setLastDraws(Number(e.target.value))}
+                    value={effectiveLastDraws}
+                    onChange={(e) => setLocalLastDraws(Number(e.target.value))}
                     className="w-full"
                 />
+
+                {localLastDraws !== null && (
+                    <button
+                        onClick={() => setLocalLastDraws(null)}
+                        className="text-xs text-blue-500 whitespace-nowrap"
+                    >
+                        Use global
+                    </button>
+                )}
             </div>
 
             {error && <div className="text-red-600 mb-2">{error}</div>}

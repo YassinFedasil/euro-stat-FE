@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
@@ -8,22 +9,45 @@ type BarChartDelayRangeProps = {
     onTop10Change?: (top10: [string, number][]) => void;
 };
 
+/* 🔥 CONTEXT GLOBAL */
+type LayoutContext = {
+    globalLastDraws: number;
+};
+
 export default function BarChartDelayRange({ onTop10Change }: BarChartDelayRangeProps) {
+    const { globalLastDraws } = useOutletContext<LayoutContext>();
+
     const [categories, setCategories] = useState<string[]>([]);
     const [seriesData, setSeriesData] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
-    const [lastDraws, setLastDraws] = useState(25);
+
+    /* 🔥 LOCAL OVERRIDE */
+    const [localLastDraws, setLocalLastDraws] = useState<number | null>(null);
+
+    /* 🔥 EFFECTIVE VALUE */
+    const effectiveLastDraws = localLastDraws ?? globalLastDraws;
+
     const [error, setError] = useState<string | null>(null);
+
+    /* 🔥 RESET AUTO SI GLOBAL CHANGE */
+    const [prevGlobal, setPrevGlobal] = useState(globalLastDraws);
+
+    useEffect(() => {
+        if (globalLastDraws !== prevGlobal) {
+            setLocalLastDraws(null);
+            setPrevGlobal(globalLastDraws);
+        }
+    }, [globalLastDraws, prevGlobal]);
 
     const fetchDelaysRange = async (last: number) => {
         setLoading(true);
         setError(null);
+
         try {
             const res = await fetch(`http://localhost:8000/api/chart-delay-range?last=${last}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const resData: DelayRangeBackendData[] = await res.json();
 
-            console.log("Données reçues:", resData); // Pour debug
+            const resData: DelayRangeBackendData[] = await res.json();
 
             if (!resData || resData.length === 0) {
                 setCategories([]);
@@ -31,15 +55,12 @@ export default function BarChartDelayRange({ onTop10Change }: BarChartDelayRange
                 return;
             }
 
-            // Les données viennent déjà du backend avec count
-            // On extrait directement les catégories et les valeurs
             const ranges = resData.map(item => item.delay_range);
             const counts = resData.map(item => item.count);
 
             setCategories(ranges);
             setSeriesData(counts);
 
-            // Top 10 par occurrences (déjà trié par le backend)
             const top10Data = resData
                 .map(item => [item.delay_range, item.count] as [string, number])
                 .slice(0, 10);
@@ -47,18 +68,21 @@ export default function BarChartDelayRange({ onTop10Change }: BarChartDelayRange
             onTop10Change?.(top10Data);
 
         } catch (err: any) {
-            console.error("Erreur:", err);
             setError(err.message || "Erreur lors du chargement des données");
         } finally {
             setLoading(false);
         }
     };
 
+    /* 🔥 DEBOUNCE */
     useEffect(() => {
-        fetchDelaysRange(lastDraws);
-    }, [lastDraws]);
+        const timer = setTimeout(() => {
+            fetchDelaysRange(effectiveLastDraws);
+        }, 300);
 
-    // Fonction pour tronquer les labels trop longs
+        return () => clearTimeout(timer);
+    }, [effectiveLastDraws]);
+
     const truncateLabel = (label: string, maxLength: number = 40) => {
         if (label.length <= maxLength) return label;
         return label.substring(0, maxLength) + "...";
@@ -90,7 +114,7 @@ export default function BarChartDelayRange({ onTop10Change }: BarChartDelayRange
         },
         xaxis: {
             categories,
-            title: { text: "Traches des retards" },
+            title: { text: "Tranches des retards" },
             labels: {
                 rotate: -45,
                 rotateAlways: true,
@@ -127,16 +151,29 @@ export default function BarChartDelayRange({ onTop10Change }: BarChartDelayRange
 
     return (
         <div>
+            {/* 🔥 SLIDER */}
             <div className="flex gap-2 items-center mb-4">
-                <label className="font-semibold">{lastDraws} derniers tirages</label>
+                <label className="font-semibold">
+                    {effectiveLastDraws} derniers tirages
+                </label>
+
                 <input
                     type="range"
                     min={1}
                     max={100}
-                    value={lastDraws}
-                    onChange={(e) => setLastDraws(Number(e.target.value))}
+                    value={effectiveLastDraws}
+                    onChange={(e) => setLocalLastDraws(Number(e.target.value))}
                     className="w-full"
                 />
+
+                {localLastDraws !== null && (
+                    <button
+                        onClick={() => setLocalLastDraws(null)}
+                        className="text-xs text-blue-500 whitespace-nowrap"
+                    >
+                        Use global
+                    </button>
+                )}
             </div>
 
             {error && <div className="text-red-600 mb-2">{error}</div>}
