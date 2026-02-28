@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState, useRef, useEffect} from "react";
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 
 type NumberRow = {
     number: string;
@@ -18,6 +18,39 @@ type NumbersDoc = {
     numbers: NumberRow[];
 };
 
+type FilterOption = {
+    label: string;
+    min?: number;
+    max?: number;
+    value?: number | string;
+    count: number;
+    display_range?: string;
+    type: "interval" | "individual";
+};
+
+type FilterCategory = {
+    intervals?: FilterOption[];
+    individual?: FilterOption[];
+};
+
+type FilterOptions = {
+    frequency: FilterCategory;
+    delay: FilterCategory;
+    progression: FilterCategory;
+    recent_frequency: FilterCategory;
+    frequency_previous_period: FilterCategory;
+    sorties: FilterCategory;
+    ecart: FilterCategory;
+    rapport_moyen: FilterCategory;
+};
+
+type SelectedFilters = {
+    [key in keyof FilterOptions]?: {
+        intervals?: string[];
+        individual?: string[];
+    };
+};
+
 const MMJJ_REGEX = /^\d{2}-\d{2}$/;
 
 const Numbers: React.FC = () => {
@@ -29,6 +62,9 @@ const Numbers: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState<string | null>(null);
     const [data, setData] = useState<NumbersDoc | null>(null);
+    const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+    const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({});
+    const [showFilters, setShowFilters] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: keyof NumberRow; direction: "asc" | "desc" } | null>(null);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const [dragSelectedRows, setDragSelectedRows] = useState<string[]>([]);
@@ -38,9 +74,12 @@ const Numbers: React.FC = () => {
 
     const isValid = useMemo(() => MMJJ_REGEX.test(mmjj.trim()), [mmjj]);
 
+    // Fonction pour charger les données et les options de filtrage
     const onExecute = useCallback(async () => {
         setErr(null);
         setData(null);
+        setFilterOptions(null);
+        setSelectedFilters({});
         setSelectedRows([]);
         setDragSelectedRows([]);
 
@@ -52,6 +91,7 @@ const Numbers: React.FC = () => {
 
         setLoading(true);
         try {
+            // Charger les données
             const res = await fetch(`http://localhost:8000/api/numbers/${encodeURIComponent(value)}`);
             if (!res.ok) {
                 const txt = await res.text();
@@ -59,6 +99,13 @@ const Numbers: React.FC = () => {
             }
             const json: NumbersDoc = await res.json();
             setData(json);
+
+            // Charger les options de filtrage
+            const filterRes = await fetch(`http://localhost:8000/api/numbers/${encodeURIComponent(value)}/filter-options`);
+            if (filterRes.ok) {
+                const filterJson = await filterRes.json();
+                setFilterOptions(filterJson.filter_options);
+            }
         } catch (e: any) {
             setErr(e.message || "Erreur inattendue");
         } finally {
@@ -66,40 +113,143 @@ const Numbers: React.FC = () => {
         }
     }, [mmjj]);
 
+    // Fonction pour extraire la valeur numérique d'une chaîne
+    const extractNumericValue = (value: string): number | null => {
+        if (!value || value === "N/A") return null;
+
+        // Gérer les cas spéciaux
+        if (value.includes("+∞") || value.includes("-∞") || value === "=") {
+            return null;
+        }
+
+        const cleaned = value.replace(',', '.').replace('%', '').trim();
+        const num = parseFloat(cleaned);
+        return isNaN(num) ? null : num;
+    };
+
+    // Fonction pour vérifier si une valeur est dans un intervalle
+    const isValueInRange = (value: string, min: number, max: number): boolean => {
+        const num = extractNumericValue(value);
+        return num !== null && num >= min && num <= max;
+    };
+
+    // Fonction pour vérifier si une valeur correspond à une option individuelle
+    const isValueMatching = (value: string, target: number | string): boolean => {
+        if (typeof target === 'number') {
+            const num = extractNumericValue(value);
+            return num !== null && Math.abs(num - target) < 0.01;
+        } else {
+            return value === target;
+        }
+    };
+
+    // Fonction pour filtrer les données
+    const filteredNumbers = useMemo(() => {
+        if (!data) return [];
+
+        return data.numbers.filter(row => {
+            // Si aucun filtre n'est sélectionné, tout afficher
+            if (Object.keys(selectedFilters).length === 0) return true;
+
+            // Vérifier chaque catégorie de filtre
+            for (const [key, filters] of Object.entries(selectedFilters)) {
+                const filterKey = key as keyof FilterOptions;
+                const categoryFilters = filterOptions?.[filterKey];
+                const value = row[filterKey as keyof NumberRow];
+
+                let matchFound = true;
+
+                // Vérifier les filtres par intervalles
+                if (filters?.intervals && filters.intervals.length > 0) {
+                    const intervalOptions = categoryFilters?.intervals || [];
+                    const selectedIntervals = intervalOptions.filter(opt =>
+                        filters.intervals?.includes(opt.label)
+                    );
+
+                    const inInterval = selectedIntervals.some(interval =>
+                        interval.min !== undefined && interval.max !== undefined &&
+                        isValueInRange(value, interval.min, interval.max)
+                    );
+
+                    if (!inInterval) matchFound = false;
+                }
+
+                // Vérifier les filtres individuels
+                if (filters?.individual && filters.individual.length > 0 && matchFound) {
+                    const individualOptions = categoryFilters?.individual || [];
+                    const selectedIndividual = individualOptions.filter(opt =>
+                        filters.individual?.includes(opt.label)
+                    );
+
+                    const matchesIndividual = selectedIndividual.some(opt => {
+                        if (opt.value !== undefined) {
+                            return isValueMatching(value, opt.value);
+                        }
+                        return false;
+                    });
+
+                    if (!matchesIndividual) matchFound = false;
+                }
+
+                if (!matchFound) return false;
+            }
+
+            return true;
+        });
+    }, [data, filterOptions, selectedFilters]);
+
     const requestSort = (key: keyof NumberRow) => {
         setSortConfig((prev) => {
             if (prev?.key === key) {
-                return {key, direction: prev.direction === "asc" ? "desc" : "asc"};
+                return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
             }
-            return {key, direction: "asc"};
+            return { key, direction: "asc" };
         });
     };
 
     const sortedNumbers = useMemo(() => {
-        if (!data) return [];
-        const numbersCopy = [...data.numbers];
+        if (!filteredNumbers) return [];
+        const numbersCopy = [...filteredNumbers];
         if (sortConfig) {
             numbersCopy.sort((a, b) => {
-                const valA = isNaN(Number(a[sortConfig.key])) ? a[sortConfig.key] : Number(a[sortConfig.key]);
-                const valB = isNaN(Number(b[sortConfig.key])) ? b[sortConfig.key] : Number(b[sortConfig.key]);
-                if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-                if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+                // Pour la progression (valeurs textuelles)
+                if (sortConfig.key === 'progression') {
+                    const valA = a[sortConfig.key];
+                    const valB = b[sortConfig.key];
+                    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+                    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+                    return 0;
+                }
+
+                // Pour les valeurs numériques
+                const valA = extractNumericValue(a[sortConfig.key]) ?? a[sortConfig.key];
+                const valB = extractNumericValue(b[sortConfig.key]) ?? b[sortConfig.key];
+
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return sortConfig.direction === "asc" ? valA - valB : valB - valA;
+                }
+
+                // Fallback pour les chaînes
+                const strA = String(valA);
+                const strB = String(valB);
+                if (strA < strB) return sortConfig.direction === "asc" ? -1 : 1;
+                if (strA > strB) return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
             });
         }
         return numbersCopy;
-    }, [data, sortConfig]);
+    }, [filteredNumbers, sortConfig]);
 
     const headers: { label: string; key: keyof NumberRow }[] = [
-        {label: "Numéro", key: "number"},
-        {label: "Fréquence", key: "frequency"},
-        {label: "Retard", key: "delay"},
-        {label: "Progression", key: "progression"},
-        {label: "Fréq_Récente", key: "recent_frequency"},
-        {label: "Fréq_Période_Préc", key: "frequency_previous_period"},
-        {label: "Sorties", key: "sorties"},
-        {label: "Ecart", key: "ecart"},
-        {label: "Rapport_moyen", key: "rapport_moyen"},
+        { label: "Numéro", key: "number" },
+        { label: "Fréquence", key: "frequency" },
+        { label: "Retard", key: "delay" },
+        { label: "Progression", key: "progression" },
+        { label: "Fréq_Récente", key: "recent_frequency" },
+        { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
+        { label: "Sorties", key: "sorties" },
+        { label: "Ecart", key: "ecart" },
+        { label: "Rapport_moyen", key: "rapport_moyen" },
     ];
 
     const handleDoubleClick = (number: string) => {
@@ -119,8 +269,6 @@ const Numbers: React.FC = () => {
     const handleMouseDown = (index: number) => {
         setIsDragging(true);
         setDragStartIndex(index);
-
-        // Pour commencer avec une seule ligne sélectionnée par drag
         const number = sortedNumbers[index].number;
         if (!dragSelectedRows.includes(number)) {
             setDragSelectedRows([number]);
@@ -129,14 +277,11 @@ const Numbers: React.FC = () => {
 
     const handleMouseEnter = (index: number) => {
         if (isDragging && dragStartIndex !== null) {
-
             const start = Math.min(dragStartIndex, index);
             const end = Math.max(dragStartIndex, index);
-
             const selected = sortedNumbers
                 .slice(start, end + 1)
                 .map(row => row.number);
-
             setDragSelectedRows(selected);
         }
     };
@@ -144,15 +289,6 @@ const Numbers: React.FC = () => {
     const handleMouseUp = () => {
         setIsDragging(false);
         setDragStartIndex(null);
-    };
-
-    // Gestion du double-clic en dehors du tableau pour désélectionner
-    const handleContainerDoubleClick = (e: React.MouseEvent) => {
-        if (e.target === tableRef.current || tableRef.current?.contains(e.target as Node)) {
-            // Si le clic est sur le tableau lui-même, ne rien faire
-            return;
-        }
-        setDragSelectedRows([]);
     };
 
     // Gestionnaire global pour la souris
@@ -178,6 +314,46 @@ const Numbers: React.FC = () => {
         setTimeout(() => setCopied(false), 1000);
     };
 
+    // Gestionnaire pour les changements de filtres
+    const handleIntervalFilterChange = (category: keyof FilterOptions, label: string) => {
+        setSelectedFilters(prev => {
+            const current = prev[category]?.intervals || [];
+            const updated = current.includes(label)
+                ? current.filter(l => l !== label)
+                : [...current, label];
+
+            return {
+                ...prev,
+                [category]: {
+                    ...prev[category],
+                    intervals: updated.length > 0 ? updated : undefined
+                }
+            };
+        });
+    };
+
+    const handleIndividualFilterChange = (category: keyof FilterOptions, label: string) => {
+        setSelectedFilters(prev => {
+            const current = prev[category]?.individual || [];
+            const updated = current.includes(label)
+                ? current.filter(l => l !== label)
+                : [...current, label];
+
+            return {
+                ...prev,
+                [category]: {
+                    ...prev[category],
+                    individual: updated.length > 0 ? updated : undefined
+                }
+            };
+        });
+    };
+
+    // Réinitialiser tous les filtres
+    const clearAllFilters = () => {
+        setSelectedFilters({});
+    };
+
     // Déterminer la couleur de fond
     const getRowBackground = (number: string) => {
         if (selectedRows.includes(number)) {
@@ -189,8 +365,68 @@ const Numbers: React.FC = () => {
         return "hover:bg-gray-50";
     };
 
+    // Composant de filtre pour une catégorie
+    const FilterCategory = ({ title, category, options }: {
+        title: string;
+        category: keyof FilterOptions;
+        options: FilterCategory;
+    }) => {
+        if (!options) return null;
+
+        return (
+            <div className="mb-1 border border-gray-200 rounded p-2">
+                <h4 className="font-semibold text-sm mb-2 bg-gray-100 p-1 rounded">{title}</h4>
+
+                {/* Filtres par intervalles */}
+                {options.intervals && options.intervals.length > 0 && (
+                    <div className="mb-3">
+                        <h5 className="text-xs font-medium text-gray-600 mb-1">Par intervalles:</h5>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {options.intervals.map(option => (
+                                <label key={`interval-${option.label}`} className="flex items-center space-x-2 text-sm hover:bg-gray-100 p-1 rounded">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFilters[category]?.intervals?.includes(option.label) || false}
+                                        onChange={() => handleIntervalFilterChange(category, option.label)}
+                                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="font-medium">{option.label}</span>
+                                    {option.display_range && (
+                                        <span className="text-gray-500 text-xs ml-1">({option.display_range})</span>
+                                    )}
+                                    <span className="text-gray-500 text-xs ml-auto">({option.count})</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Filtres individuels */}
+                {options.individual && options.individual.length > 0 && (
+                    <div>
+                        <h5 className="text-xs font-medium text-gray-600 mb-1">Valeurs individuelles:</h5>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {options.individual.map(option => (
+                                <label key={`ind-${option.label}`} className="flex items-center space-x-2 text-sm hover:bg-gray-100 p-1 rounded">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFilters[category]?.individual?.includes(option.label) || false}
+                                        onChange={() => handleIndividualFilterChange(category, option.label)}
+                                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="font-medium">{option.label}</span>
+                                    <span className="text-gray-500 text-xs ml-auto">({option.count})</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
-        <div className="p-4" onDoubleClick={handleContainerDoubleClick}>
+        <div className="p-4">
             {/* Ligne input + boutons */}
             <div className="flex gap-2 items-center mb-3 justify-between">
                 <div className="flex gap-2 items-center">
@@ -210,6 +446,14 @@ const Numbers: React.FC = () => {
                     >
                         {loading ? "Chargement..." : "Exécuter"}
                     </button>
+                    {data && (
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`px-3 py-1 rounded font-semibold text-white ${showFilters ? "bg-orange-600 hover:bg-orange-700" : "bg-purple-600 hover:bg-purple-700"}`}
+                        >
+                            {showFilters ? "Masquer filtres" : "Afficher filtres"}
+                        </button>
+                    )}
                 </div>
                 {data && (
                     <button
@@ -233,15 +477,63 @@ const Numbers: React.FC = () => {
                 </div>
             )}
 
+            {/* Panneau de filtres */}
+            {data && showFilters && filterOptions && (
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-bold text-lg">Filtres avancés</h3>
+                        <button
+                            onClick={clearAllFilters}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                        >
+                            Réinitialiser tous les filtres
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <FilterCategory title="Fréquence" category="frequency" options={filterOptions.frequency} />
+                        <FilterCategory title="Retard" category="delay" options={filterOptions.delay} />
+                        <FilterCategory title="Progression" category="progression" options={filterOptions.progression} />
+                        <FilterCategory title="Fréq_Récente" category="recent_frequency" options={filterOptions.recent_frequency} />
+                        <FilterCategory title="Fréq_Période_Préc" category="frequency_previous_period" options={filterOptions.frequency_previous_period} />
+                        <FilterCategory title="Sorties" category="sorties" options={filterOptions.sorties} />
+                        <FilterCategory title="Ecart" category="ecart" options={filterOptions.ecart} />
+                        <FilterCategory title="Rapport_moyen" category="rapport_moyen" options={filterOptions.rapport_moyen} />
+                    </div>
+
+                    {Object.keys(selectedFilters).length > 0 && (
+                        <div className="mt-3 p-2 bg-blue-50 rounded text-sm">
+                            <span className="font-semibold">Filtres actifs: </span>
+                            {Object.entries(selectedFilters).map(([key, filters]) => (
+                                <div key={key} className="ml-2">
+                                    <span className="font-medium">{key}:</span>
+                                    {filters?.intervals && filters.intervals.length > 0 && (
+                                        <span className="mr-2 text-blue-700"> intervalles: {filters.intervals.join(', ')}</span>
+                                    )}
+                                    {filters?.individual && filters.individual.length > 0 && (
+                                        <span className="text-green-700"> valeurs: {filters.individual.join(', ')}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Tableau des résultats */}
             {data && (
                 <>
-                    <div className="mb-2 text-blue-600">
-                        <strong>Tirage:</strong> {data._id}
+                    <div className="mb-2 text-blue-600 flex justify-between">
+                        <div>
+                            <strong>Tirage:</strong> {data._id}
+                        </div>
+                        <div>
+                            <strong>Résultats:</strong> {sortedNumbers.length} / {data.numbers.length}
+                        </div>
                     </div>
                     <div
                         ref={tableRef}
-                        className="overflow-x-auto"
+                        className="overflow-x-auto border border-gray-300 rounded"
                         onMouseLeave={() => {
                             if (isDragging) {
                                 setIsDragging(false);
@@ -249,13 +541,13 @@ const Numbers: React.FC = () => {
                             }
                         }}
                     >
-                        <table className="min-w-[900px] w-full border-collapse border border-gray-300">
+                        <table className="min-w-[900px] w-full border-collapse">
                             <thead>
                             <tr className="bg-gray-100">
-                                {headers.map(({label, key}) => (
+                                {headers.map(({ label, key }) => (
                                     <th
                                         key={key}
-                                        className="border border-gray-300 px-3 py-2 text-center cursor-pointer"
+                                        className="border border-gray-300 px-3 py-2 text-center cursor-pointer hover:bg-gray-200"
                                         onClick={() => requestSort(key)}
                                     >
                                         {label} {sortConfig?.key === key ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
@@ -277,7 +569,7 @@ const Numbers: React.FC = () => {
                                         select-none
                                     `}
                                 >
-                                    <td className="border border-gray-300 px-2 py-1 text-center">{row.number}</td>
+                                    <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.number}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.frequency}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.delay}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.progression}</td>
