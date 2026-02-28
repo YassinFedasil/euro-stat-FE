@@ -373,16 +373,26 @@ const Numbers: React.FC = () => {
     }) => {
         if (!options) return null;
 
+        const hasIntervals = options.intervals && options.intervals.length > 0;
+        const hasIndividual = options.individual && options.individual.length > 0;
+
+        // Définir la hauteur en fonction du nombre d'éléments
+        const getMaxHeight = (itemCount: number) => {
+            if (itemCount <= 5) return "max-h-32"; // Hauteur fixe pour peu d'éléments
+            if (itemCount <= 10) return "max-h-48";
+            return "max-h-64";
+        };
+
         return (
-            <div className="mb-1 border border-gray-200 rounded p-2">
+            <div className="mb-4 border border-gray-200 rounded p-2">
                 <h4 className="font-semibold text-sm mb-2 bg-gray-100 p-1 rounded">{title}</h4>
 
                 {/* Filtres par intervalles */}
-                {options.intervals && options.intervals.length > 0 && (
-                    <div className="mb-3">
+                {hasIntervals && (
+                    <div className={hasIndividual ? "mb-3" : ""}>
                         <h5 className="text-xs font-medium text-gray-600 mb-1">Par intervalles:</h5>
-                        <div className="space-y-1 max-h-32 overflow-y-auto">
-                            {options.intervals.map(option => (
+                        <div className={`space-y-1 ${getMaxHeight(options.intervals!.length)} overflow-y-auto`}>
+                            {options.intervals!.map(option => (
                                 <label key={`interval-${option.label}`} className="flex items-center space-x-2 text-sm hover:bg-gray-100 p-1 rounded">
                                     <input
                                         type="checkbox"
@@ -402,11 +412,11 @@ const Numbers: React.FC = () => {
                 )}
 
                 {/* Filtres individuels */}
-                {options.individual && options.individual.length > 0 && (
+                {hasIndividual && (
                     <div>
                         <h5 className="text-xs font-medium text-gray-600 mb-1">Valeurs individuelles:</h5>
-                        <div className="space-y-1 max-h-32 overflow-y-auto">
-                            {options.individual.map(option => (
+                        <div className={`space-y-1 ${getMaxHeight(options.individual!.length + 10)} overflow-y-auto`}>
+                            {options.individual!.map(option => (
                                 <label key={`ind-${option.label}`} className="flex items-center space-x-2 text-sm hover:bg-gray-100 p-1 rounded">
                                     <input
                                         type="checkbox"
