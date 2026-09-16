@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, type FormEvent} from "react";
 import Input from "../components/form/input/InputField.tsx";
 import Button from "../components/ui/button/Button.tsx";
 
@@ -31,9 +31,9 @@ export default function Export() {
             }
         }
 
-        // Validation de la date (format xx-xx)
-        if (!/^\d{2}-\d{2}$/.test(form.date)) {
-            setResponse("La date doit être au format DD-MM");
+        // Validation de la date (JJ-MM-AAAA canonique, JJ-MM legacy possible)
+        if (!/^\d{2}-\d{2}(?:-\d{4})?$/.test(form.date)) {
+            setResponse("La date doit être au format JJ-MM-AAAA (ex: 15-09-2026)");
             return false;
         }
 
@@ -68,7 +68,7 @@ export default function Export() {
         return true;
     };
 
-    const submitForm = async (e: any) => {
+    const submitForm = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setResponse("");
         setResponseType("info");
@@ -87,7 +87,7 @@ export default function Export() {
             const data = await res.json();
             setResponse(data.message || "Extraction terminée.");
             setResponseType("success");
-        } catch (error) {
+        } catch {
             setResponse("Erreur de connexion au serveur.");
             setResponseType("error");
         }
@@ -109,7 +109,7 @@ export default function Export() {
 
                     {/* Date */}
                     <Input
-                        placeholder="Sélectionnez une date DD-MM"
+                        placeholder="Sélectionnez une date JJ-MM-AAAA"
                         value={form.date}
                         onChange={(e) => handleChange("date", e.target.value)}
                     />

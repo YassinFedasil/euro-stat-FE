@@ -14,7 +14,7 @@ type NumberRow = {
 };
 
 type NumbersDoc = {
-    _id: string;           // "MM-JJ"
+    _id: string;           // "JJ-MM-AAAA"
     numbers: NumberRow[];
 };
 
@@ -51,12 +51,42 @@ type SelectedFilters = {
     };
 };
 
-const MMJJ_REGEX = /^\d{2}-\d{2}$/;
+const MMJJ_REGEX = /^\d{2}-\d{2}(?:-\d{4})?$/;
+
+// Fonction pour extraire la valeur numérique d'une chaîne
+const extractNumericValue = (value: string): number | null => {
+    if (!value || value === "N/A") return null;
+
+    // Gérer les cas spéciaux
+    if (value.includes("+∞") || value.includes("-∞") || value === "=") {
+        return null;
+    }
+
+    const cleaned = value.replace(',', '.').replace('%', '').trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+};
+
+// Fonction pour vérifier si une valeur est dans un intervalle
+const isValueInRange = (value: string, min: number, max: number): boolean => {
+    const num = extractNumericValue(value);
+    return num !== null && num >= min && num <= max;
+};
+
+// Fonction pour vérifier si une valeur correspond à une option individuelle
+const isValueMatching = (value: string, target: number | string): boolean => {
+    if (typeof target === 'number') {
+        const num = extractNumericValue(value);
+        return num !== null && Math.abs(num - target) < 0.01;
+    } else {
+        return value === target;
+    }
+};
 
 const Numbers: React.FC = () => {
     const today = new Date();
     const pad = (n: number) => n.toString().padStart(2, "0");
-    const defaultDate = `${pad(today.getDate())}-${pad(today.getMonth() + 1)}`;
+    const defaultDate = `${pad(today.getDate())}-${pad(today.getMonth() + 1)}-${today.getFullYear()}`;
 
     const [mmjj, setMmjj] = useState(defaultDate);
     const [loading, setLoading] = useState(false);
@@ -85,7 +115,7 @@ const Numbers: React.FC = () => {
 
         const value = mmjj.trim();
         if (!MMJJ_REGEX.test(value)) {
-            setErr("La date doit être au format JJ-MM (ex: 08-29).");
+            setErr("La date doit être au format JJ-MM-AAAA (ex: 15-09-2026).");
             return;
         }
 
@@ -106,42 +136,12 @@ const Numbers: React.FC = () => {
                 const filterJson = await filterRes.json();
                 setFilterOptions(filterJson.filter_options);
             }
-        } catch (e: any) {
-            setErr(e.message || "Erreur inattendue");
+        } catch (e: unknown) {
+            setErr(e instanceof Error ? e.message : "Erreur inattendue");
         } finally {
             setLoading(false);
         }
     }, [mmjj]);
-
-    // Fonction pour extraire la valeur numérique d'une chaîne
-    const extractNumericValue = (value: string): number | null => {
-        if (!value || value === "N/A") return null;
-
-        // Gérer les cas spéciaux
-        if (value.includes("+∞") || value.includes("-∞") || value === "=") {
-            return null;
-        }
-
-        const cleaned = value.replace(',', '.').replace('%', '').trim();
-        const num = parseFloat(cleaned);
-        return isNaN(num) ? null : num;
-    };
-
-    // Fonction pour vérifier si une valeur est dans un intervalle
-    const isValueInRange = (value: string, min: number, max: number): boolean => {
-        const num = extractNumericValue(value);
-        return num !== null && num >= min && num <= max;
-    };
-
-    // Fonction pour vérifier si une valeur correspond à une option individuelle
-    const isValueMatching = (value: string, target: number | string): boolean => {
-        if (typeof target === 'number') {
-            const num = extractNumericValue(value);
-            return num !== null && Math.abs(num - target) < 0.01;
-        } else {
-            return value === target;
-        }
-    };
 
     // Fonction pour filtrer les données
     const filteredNumbers = useMemo(() => {
@@ -440,7 +440,7 @@ const Numbers: React.FC = () => {
             {/* Ligne input + boutons */}
             <div className="flex gap-2 items-center mb-3 justify-between">
                 <div className="flex gap-2 items-center">
-                    <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM)</label>
+                    <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM-AAAA)</label>
                     <input
                         id="mmjj"
                         value={mmjj}
@@ -478,7 +478,7 @@ const Numbers: React.FC = () => {
             {/* Messages */}
             {!isValid && mmjj.length > 0 && (
                 <div className="text-red-700 mb-2">
-                    Format attendu: JJ-MM (ex: 08-29)
+                    Format attendu: JJ-MM-AAAA (ex: 15-09-2026)
                 </div>
             )}
             {err && (

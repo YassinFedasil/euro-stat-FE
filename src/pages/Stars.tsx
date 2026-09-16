@@ -11,16 +11,16 @@ type StarRow = {
 };
 
 type StarsDoc = {
-    _id: string; // "MM-JJ"
+    _id: string; // "JJ-MM-AAAA"
     stars: StarRow[];
 };
 
-const MMJJ_REGEX = /^\d{2}-\d{2}$/;
+const MMJJ_REGEX = /^\d{2}-\d{2}(?:-\d{4})?$/;
 
 const Stars: React.FC = () => {
     const today = new Date();
     const pad = (n: number) => n.toString().padStart(2, "0");
-    const defaultDate = `${pad(today.getDate())}-${pad(today.getMonth() + 1)}`;
+    const defaultDate = `${pad(today.getDate())}-${pad(today.getMonth() + 1)}-${today.getFullYear()}`;
 
     const [mmjj, setMmjj] = useState(defaultDate);
     const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ const Stars: React.FC = () => {
 
         const value = mmjj.trim();
         if (!MMJJ_REGEX.test(value)) {
-            setErr("La date doit être au format JJ-MM (ex: 08-29).");
+            setErr("La date doit être au format JJ-MM-AAAA (ex: 15-09-2026).");
             return;
         }
 
@@ -56,8 +56,8 @@ const Stars: React.FC = () => {
             }
             const json: StarsDoc = await res.json();
             setData(json);
-        } catch (e: any) {
-            setErr(e.message || "Erreur inattendue");
+        } catch (e: unknown) {
+            setErr(e instanceof Error ? e.message : "Erreur inattendue");
         } finally {
             setLoading(false);
         }
@@ -188,7 +188,7 @@ const Stars: React.FC = () => {
             {/* Ligne input + boutons */}
             <div className="flex gap-2 items-center mb-3 justify-between">
                 <div className="flex gap-2 items-center">
-                    <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM)</label>
+                    <label htmlFor="mmjj" className="font-semibold">Date (JJ-MM-AAAA)</label>
                     <input
                         id="mmjj"
                         value={mmjj}
@@ -218,7 +218,7 @@ const Stars: React.FC = () => {
             {/* Messages */}
             {!isValid && mmjj.length > 0 && (
                 <div className="text-red-700 mb-2">
-                    Format attendu: JJ-MM (ex: 08-29)
+                    Format attendu: JJ-MM-AAAA (ex: 15-09-2026)
                 </div>
             )}
             {err && (
