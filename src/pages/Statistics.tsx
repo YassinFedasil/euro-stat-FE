@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
-import {IDrawData} from "./Utils/IDrawData";
+import React, {useEffect, useState} from "react";
+import type {IDrawData} from "../types/drawData";
 import {getDrawData, deleteDrawData} from "../services/drawDataService";
 import {Trash2} from "lucide-react";
 
@@ -52,10 +52,14 @@ const Statistics: React.FC = () => {
         {label: "Fréq. Période Préc", field: "frequency_previous_period"},
     ];
 
-    const groupedDraws = [];
-    for (let i = 0; i < draws.length; i += 2) {
-        groupedDraws.push(draws.slice(i, i + 2));
-    }
+    const groupedDraws = draws.reduce<IDrawData[][]>((groups, draw, index) => {
+        if (index % 2 === 0) {
+            groups.push([draw]);
+        } else {
+            groups[groups.length - 1].push(draw);
+        }
+        return groups;
+    }, []);
 
     if (loading) return <div>Chargement…</div>;
 
@@ -69,12 +73,12 @@ const Statistics: React.FC = () => {
             text += `Tirage : ${draw._id}\n`;
             text += numberRows.map((row) => row.label).join("\t") + "\n";
 
-            for (let i = 0; i < draw.draw_data.numbers.length; i++) {
+            draw.draw_data.numbers.forEach((_, i) => {
                 const rowValues = numberRows.map(
                     (row) => draw.draw_data.numbers[i][row.field as keyof typeof draw.draw_data.numbers[number]]
                 );
                 text += rowValues.join("\t") + "\n";
-            }
+            });
 
             text += "\n---------------------------\n\n";
         });
@@ -94,12 +98,12 @@ const Statistics: React.FC = () => {
             text += `Tirage : ${draw._id}\n`;
             text += starRows.map((row) => row.label).join("\t") + "\n";
 
-            for (let i = 0; i < draw.draw_data.stars.length; i++) {
+            draw.draw_data.stars.forEach((_, i) => {
                 const rowValues = starRows.map(
                     (row) => draw.draw_data.stars[i][row.field as keyof typeof draw.draw_data.stars[number]]
                 );
                 text += rowValues.join("\t") + "\n";
-            }
+            });
 
             text += "\n---------------------------\n\n";
         });

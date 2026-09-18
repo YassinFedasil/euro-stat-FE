@@ -20,7 +20,7 @@ const EuroAnimation: React.FC = () => {
 
         return {
             id: Date.now() + Math.random(),
-            denomination: [5, 10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 7)] as any,
+            denomination: ([5, 10, 20, 50, 100, 200, 500] as const)[Math.floor(Math.random() * 7)],
             left: Math.random() * (containerWidth - 120),
             rotation: Math.random() * 360,
             speed: 10 + Math.random() * 20,

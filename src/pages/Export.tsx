@@ -1,6 +1,7 @@
 import {useState, type FormEvent} from "react";
 import Input from "../components/form/input/InputField.tsx";
 import Button from "../components/ui/button/Button.tsx";
+import {API_BASE_URL} from "../config.ts";
 
 export default function Export() {
     const [form, setForm] = useState({
@@ -78,7 +79,7 @@ export default function Export() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:8000/api/extract-drive", {
+            const res = await fetch(`${API_BASE_URL}/api/extract-drive`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(form),

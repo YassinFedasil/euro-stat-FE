@@ -21,7 +21,7 @@ export default function DataStars() {
         setLoading(true);
         try {
             const result = await fetchTopStars(top, last);
-            setData(result);
+            setData(result as ApiResponse);
         } finally {
             setLoading(false);
         }

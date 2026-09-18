@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 
 type NumberRow = {
     number: string;
@@ -122,7 +123,7 @@ const Numbers: React.FC = () => {
         setLoading(true);
         try {
             // Charger les données
-            const res = await fetch(`http://localhost:8000/api/numbers/${encodeURIComponent(value)}`);
+            const res = await fetch(`${API_BASE_URL}/api/numbers/${encodeURIComponent(value)}`);
             if (!res.ok) {
                 const txt = await res.text();
                 throw new Error(txt || `HTTP ${res.status}`);
@@ -131,7 +132,7 @@ const Numbers: React.FC = () => {
             setData(json);
 
             // Charger les options de filtrage
-            const filterRes = await fetch(`http://localhost:8000/api/numbers/${encodeURIComponent(value)}/filter-options`);
+            const filterRes = await fetch(`${API_BASE_URL}/api/numbers/${encodeURIComponent(value)}/filter-options`);
             if (filterRes.ok) {
                 const filterJson = await filterRes.json();
                 setFilterOptions(filterJson.filter_options);

@@ -44,7 +44,7 @@ export default function DataNumbers() {
         setLoading(true);
         try {
             const result = await fetchTopNumbers(top, last);
-            setData(result);
+            setData(result as ApiResponse);
         } finally {
             setLoading(false);
         }

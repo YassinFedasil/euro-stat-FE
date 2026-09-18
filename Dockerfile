@@ -12,6 +12,10 @@ RUN npm install
 # Copier le projet
 COPY . .
 
+# URL de base de l'API, injectée au build (surchargée par docker-compose)
+ARG VITE_API_URL=http://localhost:8000
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build pour production (génère /dist)
 RUN npm run build
 

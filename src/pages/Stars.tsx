@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 
 type StarRow = {
     star: string;
@@ -49,7 +50,7 @@ const Stars: React.FC = () => {
 
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:8000/api/stars/${encodeURIComponent(value)}`);
+            const res = await fetch(`${API_BASE_URL}/api/stars/${encodeURIComponent(value)}`);
             if (!res.ok) {
                 const txt = await res.text();
                 throw new Error(txt || `HTTP ${res.status}`);

@@ -1,79 +1,41 @@
 import PageMeta from "../../components/common/PageMeta";
-import BarChartReport from "../../components/charts/numbers/BarChartReport.tsx";
-import BarChartOut from "../../components/charts/numbers/BarChartOut.tsx";
-import BarChartEcarts from "../../components/charts/numbers/BarChartEcarts.tsx";
-import BarChartFrequency from "../../components/charts/numbers/BarChartFrequency.tsx";
-import BarChartFrequencyPreviousPeriod from "../../components/charts/numbers/BarChartFrequencyPreviousPeriod.tsx";
-import BarChartProgression from "../../components/charts/numbers/BarChartProgression.tsx";
-import BarChartRecentFrequency from "../../components/charts/numbers/BarChartRecentFrequency.tsx";
-import BarChartDelay from "../../components/charts/numbers/BarChartDelay.tsx";
-import BarChartDelayRange from "../../components/charts/numbers/BarChartDelayRange.tsx";
-import BarChartEcartsRange from "../../components/charts/numbers/BarChartEcartsRange.tsx";
-import BarChartOutRange from "../../components/charts/numbers/BarChartOutRange.tsx";
+import BarChart from "../../components/charts/BarChart.tsx";
+import {
+  CHARTS_BY_ID,
+  HOME_CHARTS_LEFT,
+  HOME_CHARTS_RIGHT,
+} from "../../components/charts/chartConfigs.ts";
 
 export default function Home() {
-    return (
-        <>
-            <PageMeta
-                title="EuroMillions"
-                description="This is web site will make you rich !"
-            />
+  return (
+    <>
+      <PageMeta
+        title="EuroMillions"
+        description="This is web site will make you rich !"
+      />
 
-            <div className="flex justify-center">
-                {/* Container centré */}
-                <div className="grid grid-cols-12 gap-6 max-w-10xl w-full">
+      <div className="flex justify-center">
+        {/* Container centré */}
+        <div className="grid grid-cols-12 gap-6 max-w-10xl w-full">
+          {/* Colonne 1 */}
+          <div className="col-span-12 xl:col-span-6 space-y-0">
+            {HOME_CHARTS_LEFT.map((id) => (
+              <div key={id} className="w-full scale-100">
+                <BarChart config={CHARTS_BY_ID[id]} />
+              </div>
+            ))}
+          </div>
 
-                    {/* Colonne 1 */}
-                    <div className="col-span-12 xl:col-span-6 space-y-0">
-                        <div className="w-full scale-100">
-                            <BarChartOut/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartEcarts/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartRecentFrequency/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartFrequency/>
-                        </div>
-                        <div className="w-full scale-100">
-                            <BarChartEcartsRange/>
-                        </div>
-
-                    </div>
-
-                    {/* Colonne 2 */}
-                    <div className="col-span-12 xl:col-span-6 space-y-1">
-                        <div className="w-full scale-100">
-                            <BarChartReport/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartProgression/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            < BarChartFrequencyPreviousPeriod/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartDelay/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartDelayRange/>
-                        </div>
-
-                        <div className="w-full scale-100">
-                            <BarChartOutRange/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+          {/* Colonne 2 */}
+          <div className="col-span-12 xl:col-span-6 space-y-1">
+            {HOME_CHARTS_RIGHT.map((id) => (
+              <div key={id} className="w-full scale-100">
+                <BarChart config={CHARTS_BY_ID[id]} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
