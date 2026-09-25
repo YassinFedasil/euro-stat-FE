@@ -69,8 +69,6 @@ const othersItems: NavItem[] = [
             {name: "Fréq_Période_Préc", path: "/bar-chart-frequency-previous-period", pro: false},
             {name: "Sorties", path: "/bar-chart-out", pro: false},
             {name: "Sorties range", path: "/bar-chart-out-range", pro: false},
-            {name: "Ecart", path: "/bar-chart-ecarts", pro: false},
-            {name: "Ecart range", path: "/bar-chart-ecarts-range", pro: false},
             {name: "Report", path: "/bar-chart-report", pro: false},
         ],
     },

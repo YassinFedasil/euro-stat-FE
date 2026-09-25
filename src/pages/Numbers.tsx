@@ -10,7 +10,6 @@ type NumberRow = {
     frequency_previous_period: string;
     last_out: string;
     sorties: string;
-    ecart: string;
     rapport_moyen: string;
 };
 
@@ -41,7 +40,6 @@ type FilterOptions = {
     recent_frequency: FilterCategory;
     frequency_previous_period: FilterCategory;
     sorties: FilterCategory;
-    ecart: FilterCategory;
     rapport_moyen: FilterCategory;
 };
 
@@ -249,7 +247,6 @@ const Numbers: React.FC = () => {
         { label: "Fréq_Récente", key: "recent_frequency" },
         { label: "Fréq_Période_Préc", key: "frequency_previous_period" },
         { label: "Sorties", key: "sorties" },
-        { label: "Ecart", key: "ecart" },
         { label: "Rapport_moyen", key: "rapport_moyen" },
     ];
 
@@ -508,7 +505,6 @@ const Numbers: React.FC = () => {
                         <FilterCategory title="Fréq_Récente" category="recent_frequency" options={filterOptions.recent_frequency} />
                         <FilterCategory title="Fréq_Période_Préc" category="frequency_previous_period" options={filterOptions.frequency_previous_period} />
                         <FilterCategory title="Sorties" category="sorties" options={filterOptions.sorties} />
-                        <FilterCategory title="Ecart" category="ecart" options={filterOptions.ecart} />
                         <FilterCategory title="Rapport_moyen" category="rapport_moyen" options={filterOptions.rapport_moyen} />
                     </div>
 
@@ -587,7 +583,6 @@ const Numbers: React.FC = () => {
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.recent_frequency}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.frequency_previous_period}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.sorties}</td>
-                                    <td className="border border-gray-300 px-2 py-1 text-center">{row.ecart}</td>
                                     <td className="border border-gray-300 px-2 py-1 text-center">{row.rapport_moyen}</td>
                                 </tr>
                             ))}

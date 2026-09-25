@@ -40,7 +40,6 @@ const Statistics: React.FC = () => {
         {label: "Fréq. Période Préc", field: "frequency_previous_period"},
         {label: "Rapport", field: "report_reduc"},
         {label: "Sortie", field: "out_reduc"},
-        {label: "Ecart", field: "ecart_reduc"},
     ];
 
     const starRows = [

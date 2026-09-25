@@ -20,8 +20,6 @@ const ORDER = [
     "FRÉQ. PÉRIODE PRÉC",
     "SORTIE",
     "SORTIE RANGE",
-    "ECARTS",
-    "ECARTS RANGE",
     "RAPPORT",
 ];
 
@@ -93,12 +91,6 @@ export default function DataNumbers() {
             // 🔹 Ajouter l'explication pour RETARD RANGE
             if (label.toUpperCase() === "RETARD RANGE") {
                 text += `\n- Exemple : "[0-5]x2 | [6-10]x3 : 3 fois" Signifie que 2 nombres ont un retard entre 0 et 5, et 3 nombres ont un retard entre 6 et 10, et cette répartition est sortie 3 fois dans les ${last} derniers tirages.\n`;
-                text += `- Les tranches sont : [0-5], [6-10], [11+]\n`;
-            }
-
-            // 🔹 Ajouter l'explication pour ECARTS RANGE
-            if (label.toUpperCase() === "ECARTS RANGE") {
-                text += `\n- Exemple : "[0-5]x2 | [6-10]x3 : 9 fois" Signifie que 2 écarts sont entre 0 et 5, et 3 écarts sont entre 6 et 10, et cette répartition est sortie 9 fois dans les ${last} derniers tirages.\n`;
                 text += `- Les tranches sont : [0-5], [6-10], [11+]\n`;
             }
 
