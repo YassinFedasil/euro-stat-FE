@@ -85,7 +85,14 @@ export default function Export() {
                 body: JSON.stringify(form),
             });
 
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setResponse(data.message || data.detail || `Erreur serveur (${res.status})`);
+                setResponseType("error");
+                return;
+            }
+
             setResponse(data.message || "Extraction terminée.");
             setResponseType("success");
         } catch {
