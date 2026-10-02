@@ -31,12 +31,12 @@ const navItems: NavItem[] = [
     },
     {
         icon: <GridIcon/>,
-        name: "Dashboard",
+        name: "Dashboard-numbers",
         path: "/dashboard-numbers",
     },
     {
         icon: <Star/>,
-        name: "Dashboard",
+        name: "Dashboard-stars",
         path: "/dashboard-stars",
     },
     {
