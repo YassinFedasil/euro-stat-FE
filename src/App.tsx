@@ -6,7 +6,8 @@ import UserProfiles from "./pages/UserProfiles";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
-import Home from "./pages/Dashboard/Home";
+import DashboardNumbers from "./pages/Dashboard/DashboardNumbers.tsx";
+import Home from "./pages/Dashboard/Home.tsx";
 import Statistics from "./pages/Statistics.tsx";
 import Numbers from "./pages/Numbers.tsx";
 import Stars from "./pages/Stars.tsx";
@@ -27,6 +28,7 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
+            <Route index path="/dashboard-numbers" element={<DashboardNumbers />} />
             <Route index path="/dashboard-stars" element={<DashboardStars />} />
 
             {/* Others Page */}

@@ -8,6 +8,7 @@ import {useState} from "react";
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
     const [globalLastDraws, setGlobalLastDraws] = useState(25);
+    const [globalLastStars, setGlobalLastStars] = useState(25);
     return (
         <div className="min-h-screen xl:flex">
             <div>
@@ -24,11 +25,13 @@ const LayoutContent: React.FC = () => {
                 <AppHeader
                     globalLastDraws={globalLastDraws}
                     setGlobalLastDraws={setGlobalLastDraws}
+                    globalLastStars={globalLastStars}
+                    setGlobalLastStars={setGlobalLastStars}
                 />
 
                 <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                     {/* 🔥 PASSER AU ROUTER */}
-                    <Outlet context={{ globalLastDraws }} />
+                    <Outlet context={{ globalLastDraws, globalLastStars }} />
                 </div>
             </div>
         </div>

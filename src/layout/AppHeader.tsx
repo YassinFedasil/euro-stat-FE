@@ -10,18 +10,23 @@ import EuroAnimation from "../pages/EuroAnimation.tsx";
 type AppHeaderProps = {
   globalLastDraws: number;
   setGlobalLastDraws: (val: number) => void;
+  globalLastStars: number;
+  setGlobalLastStars: (val: number) => void;
 };
 
 const AppHeader: React.FC<AppHeaderProps> = ({
                                                globalLastDraws,
                                                setGlobalLastDraws,
+                                               globalLastStars,
+                                               setGlobalLastStars,
                                              }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [isEuroAnimationVisible, setIsEuroAnimationVisible] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
   const location = useLocation();
-  const isHomePage = location.pathname === "/";
+  const isHomePage = location.pathname === "/dashboard-numbers";
+  const isStarsPage = location.pathname === "/dashboard-stars";
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -176,6 +181,20 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                                         max={100}
                                         value={globalLastDraws}
                                         onChange={(e) => setGlobalLastDraws(Number(e.target.value))}
+                                        className="w-62"
+                                    />
+                                </>
+                            )}
+
+                            {isStarsPage && (
+                                <>
+                                    <span className="text-sm font-semibold">{globalLastStars}</span>
+                                    <input
+                                        type="range"
+                                        min={1}
+                                        max={100}
+                                        value={globalLastStars}
+                                        onChange={(e) => setGlobalLastStars(Number(e.target.value))}
                                         className="w-62"
                                     />
                                 </>

@@ -7,6 +7,7 @@ import type { ChartConfig } from "./chartConfigs";
 
 type LayoutContext = {
   globalLastDraws: number;
+  globalLastStars: number;
 };
 
 type BackendRow = Record<string, unknown>;
@@ -28,29 +29,27 @@ export default function BarChart({ config, onTop10Change }: BarChartProps) {
 
   const context = useOutletContext<LayoutContext | undefined>();
   const globalLastDraws = context?.globalLastDraws ?? 25;
+  const globalLastStars = context?.globalLastStars ?? 25;
+  const globalLast = isStars ? globalLastStars : globalLastDraws;
 
   const [categories, setCategories] = useState<string[]>([]);
   const [seriesData, setSeriesData] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [localLastDraws, setLocalLastDraws] = useState<number | null>(
-    isStars ? 25 : null,
-  );
+  const [localLastDraws, setLocalLastDraws] = useState<number | null>(null);
 
-  const effectiveLastDraws = isStars
-    ? (localLastDraws ?? 25)
-    : (localLastDraws ?? globalLastDraws);
+  const effectiveLastDraws = localLastDraws ?? globalLast;
 
   useEffect(() => {
-    if (!isStars) setLocalLastDraws(null);
-  }, [globalLastDraws, isStars]);
+    setLocalLastDraws(null);
+  }, [globalLast, isStars]);
 
   useEffect(() => {
     setCategories([]);
     setSeriesData([]);
     setError(null);
-    setLocalLastDraws(isStars ? 25 : null);
-  }, [config.endpoint, isStars]);
+    setLocalLastDraws(null);
+  }, [config.endpoint]);
 
   const fetchData = async (last: number) => {
     setLoading(true);
@@ -109,18 +108,13 @@ export default function BarChart({ config, onTop10Change }: BarChartProps) {
   };
 
   useEffect(() => {
-    if (isStars) {
-      void fetchData(effectiveLastDraws);
-      return;
-    }
-
     const timer = setTimeout(() => {
       void fetchData(effectiveLastDraws);
     }, 300);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveLastDraws, isStars, config.endpoint]);
+  }, [effectiveLastDraws, config.endpoint]);
 
   const options: ApexOptions =
     variant === "distributed"
@@ -191,7 +185,7 @@ export default function BarChart({ config, onTop10Change }: BarChartProps) {
           className="w-full"
         />
 
-        {!isStars && localLastDraws !== null && (
+        {localLastDraws !== null && (
           <button
             onClick={() => setLocalLastDraws(null)}
             className="text-xs text-blue-500 whitespace-nowrap"
@@ -204,7 +198,7 @@ export default function BarChart({ config, onTop10Change }: BarChartProps) {
       {error && <div className="text-red-600 mb-2">{error}</div>}
 
       {loading ? (
-        <div>{isStars ? "Chargement..." : "Chargement du graphique..."}</div>
+        <div>Chargement du graphique...</div>
       ) : (
         <div className="max-w-full overflow-x-auto custom-scrollbar">
           <div className={variant === "distributed" ? "min-w-[700px]" : "min-w-[600px]"}>
