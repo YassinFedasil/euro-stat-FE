@@ -15,4 +15,17 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    // Écouter sur toutes les interfaces (requis dans Docker)
+    host: true,
+    port: 5173,
+    strictPort: true,
+    watch: {
+      // Docker Desktop + Windows : le file watching natif (inotify) ne se
+      // propage pas bien depuis les volumes montés ; on force le polling
+      // pour que Vite détecte chaque modification des fichiers src/.
+      usePolling: true,
+      interval: 300,
+    },
+  },
 });

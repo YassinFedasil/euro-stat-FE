@@ -1,0 +1,14 @@
+# Mode développement : serveur Vite avec HMR
+# Le code source est monté depuis l'hôte (bind mount dans docker-compose.yml),
+# donc aucune reconstruction de l'image n'est nécessaire entre les éditions.
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Installer les dépendances exactes de package-lock.json
+COPY package*.json ./
+RUN npm ci
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev"]
