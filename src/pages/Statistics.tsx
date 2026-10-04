@@ -155,6 +155,10 @@ const Statistics: React.FC = () => {
             if (skipped > 0) lines.push(`${skipped} date(s) déjà exportée(s) (ignorées)`);
             if (ignored > 0) lines.push(`${ignored} date(s) ignorée(s) (fichier result.html manquant)`);
             if (errors > 0) lines.push(`${errors} erreur(s)`);
+            if (typeof summary.elapsed_ms === "number") {
+                const seconds = (summary.elapsed_ms / 1000).toFixed(1);
+                lines.push(`Terminé en ${seconds} s`);
+            }
 
             summary.exported?.forEach((e) => lines.push(`[OK] ${e.date}`));
             //summary.skipped?.forEach((e) => lines.push(`[déjà exporté] ${e.date}`));

@@ -15,6 +15,7 @@ export type ExportAllSummary = {
   skipped?: ExportDateResult[];
   ignored?: ExportDateResult[];
   errors?: ExportDateResult[];
+  elapsed_ms?: number;
 };
 
 export const getDrawData = async (): Promise<IDrawData[]> => {
