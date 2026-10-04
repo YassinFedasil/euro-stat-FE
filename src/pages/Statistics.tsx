@@ -1,7 +1,17 @@
 import React, {useEffect, useState} from "react";
 import type {IDrawData} from "../types/drawData";
-import {getDrawData, deleteDrawData} from "../services/drawDataService";
-import {Trash2} from "lucide-react";
+import {
+  getDrawData,
+  deleteDrawData,
+  exportAllDrawsFromDrive,
+} from "../services/drawDataService";
+import {Trash2, Download} from "lucide-react";
+
+type ExportSummaryView = {
+  type: "success" | "error";
+  title: string;
+  lines: string[];
+};
 
 const Statistics: React.FC = () => {
     const [draws, setDraws] = useState<IDrawData[]>([]);
@@ -9,6 +19,8 @@ const Statistics: React.FC = () => {
     const [copyLast, setCopyLast] = useState<number>(25); // combien de tirages récentes à copier
     const [copiedNumbers, setCopiedNumbers] = useState(false);
     const [copiedStars, setCopiedStars] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [exportSummary, setExportSummary] = useState<ExportSummaryView | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -113,9 +125,65 @@ const Statistics: React.FC = () => {
     };
     // ---------------------------------------------------
 
+    // ------------------- EXPORT AUTOMATIQUE -------------
+    const handleExportAll = async () => {
+        if (exporting) return;
+        setExporting(true);
+        setExportSummary(null);
+
+        try {
+            const summary = await exportAllDrawsFromDrive();
+
+            if (summary.status === "error" || summary.total_found === undefined) {
+                setExportSummary({
+                    type: "error",
+                    title: "Export impossible",
+                    lines: [summary.message || "Erreur lors de la connexion à Google Drive."],
+                });
+                return;
+            }
+
+            const exported = summary.exported?.length ?? 0;
+            const skipped = summary.skipped?.length ?? 0;
+            const ignored = summary.ignored?.length ?? 0;
+            const errors = summary.errors?.length ?? 0;
+
+            const lines: string[] = [
+                `${summary.total_found} date(s) trouvée(s) sur Google Drive`,
+                `${exported} export(s) généré(s)`,
+            ];
+            if (skipped > 0) lines.push(`${skipped} date(s) déjà exportée(s) (ignorées)`);
+            if (ignored > 0) lines.push(`${ignored} date(s) ignorée(s) (fichier result.html manquant)`);
+            if (errors > 0) lines.push(`${errors} erreur(s)`);
+
+            summary.exported?.forEach((e) => lines.push(`[OK] ${e.date}`));
+            //summary.skipped?.forEach((e) => lines.push(`[déjà exporté] ${e.date}`));
+            summary.ignored?.forEach((e) => lines.push(`[ignoré] ${e.date} → ${e.reason ?? "résultat manquant"}`));
+            summary.errors?.forEach((e) => lines.push(`[erreur] ${e.date} → ${e.message ?? "erreur inconnue"}`));
+
+            setExportSummary({
+                type: errors > 0 ? "error" : "success",
+                title: errors > 0 ? "Export terminé avec quelques erreurs." : "Export terminé.",
+                lines,
+            });
+
+            const data = await getDrawData();
+            setDraws(data);
+        } catch {
+            setExportSummary({
+                type: "error",
+                title: "Erreur de connexion au serveur.",
+                lines: [],
+            });
+        } finally {
+            setExporting(false);
+        }
+    };
+    // ---------------------------------------------------
+
     return (
         <div className="p-6 space-y-8">
-            {/* Boutons copier et input */}
+            {/* Boutons copier + export et input */}
             <div className="flex items-center gap-2 mb-4">
                 <input
                     type="number"
@@ -142,7 +210,40 @@ const Statistics: React.FC = () => {
                 >
                     Copier les étoiles
                 </button>
+                <button
+                    className={`ml-auto inline-flex items-center gap-2 px-4 py-2 rounded text-white ${
+                        exporting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                    }`}
+                    onClick={handleExportAll}
+                    disabled={exporting}
+                    title="Exporter automatiquement tous les tirages depuis Google Drive"
+                >
+                    {exporting ? (
+                        <>
+                            <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Loading...
+                        </>
+                    ) : (
+                        <>
+                            <Download size={20} />
+                            Export
+                        </>
+                    )}
+                </button>
             </div>
+
+            {exportSummary && (
+                <div className={`mb-4 p-4 rounded-lg border ${
+                    exportSummary.type === "error"
+                        ? "bg-red-50 border-red-200 text-red-700"
+                        : "bg-green-50 border-green-200 text-green-700"
+                }`}>
+                    <p className="font-semibold">{exportSummary.title}</p>
+                    {exportSummary.lines.map((line, index) => (
+                        <p key={index} className="text-sm mt-1">{line}</p>
+                    ))}
+                </div>
+            )}
 
             {groupedDraws.map((group, index) => (
                 <div key={index} className="grid grid-cols-1 gap-6">

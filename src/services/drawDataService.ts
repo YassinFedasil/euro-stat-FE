@@ -1,5 +1,21 @@
-import { apiDelete, apiGet } from "./api";
+import { apiDelete, apiGet, apiPost } from "./api";
 import type { IDrawData } from "../types/drawData";
+
+export type ExportDateResult = {
+  date: string;
+  reason?: string;
+  message?: string;
+};
+
+export type ExportAllSummary = {
+  status: "success" | "error";
+  message?: string;
+  total_found?: number;
+  exported?: ExportDateResult[];
+  skipped?: ExportDateResult[];
+  ignored?: ExportDateResult[];
+  errors?: ExportDateResult[];
+};
 
 export const getDrawData = async (): Promise<IDrawData[]> => {
   try {
@@ -12,4 +28,8 @@ export const getDrawData = async (): Promise<IDrawData[]> => {
 
 export const deleteDrawData = async (id: string): Promise<void> => {
   await apiDelete(`/api/draw-data/${id}`);
+};
+
+export const exportAllDrawsFromDrive = async (): Promise<ExportAllSummary> => {
+  return await apiPost<ExportAllSummary>("/api/extract-drive-all", {});
 };
