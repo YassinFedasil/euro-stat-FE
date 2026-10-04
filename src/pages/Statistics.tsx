@@ -265,7 +265,10 @@ const Statistics: React.FC = () => {
                                 <Trash2
                                     className="text-red-600 cursor-pointer hover:scale-110 transition"
                                     size={26}
-                                    onDoubleClick={() => handleDelete(draw._id)}
+                                    onDoubleClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(draw._id);
+                                    }}
                                 />
                             </div>
 
