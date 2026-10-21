@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchTopNumbers } from "../services/topXService";
+import { getDrawData } from "../services/drawDataService";
+import type { IDrawData } from "../types/drawData";
+import {
+    computePairOddDistribution,
+    NUMBER_PAIR_ODD_LABELS,
+} from "../utils/pairOdd";
 
 type TopValue = {
     value: number;
@@ -35,6 +41,7 @@ export default function DataNumbers() {
     const [top, setTop] = useState(10);
     const [last, setLast] = useState(25);
     const [data, setData] = useState<ApiResponse | null>(null);
+    const [draws, setDraws] = useState<IDrawData[]>([]);
     const [loading, setLoading] = useState(false);
     const [copiedNumbers, setCopiedNumbers] = useState(false);
 
@@ -45,6 +52,11 @@ export default function DataNumbers() {
             setData(result as ApiResponse);
         } finally {
             setLoading(false);
+        }
+        try {
+            setDraws(await getDrawData());
+        } catch {
+            // La section PAIR / IMPAIR reste masquée si les tirages sont indisponibles.
         }
     };
 
@@ -63,6 +75,21 @@ export default function DataNumbers() {
 
         return map;
     }, [data]);
+
+    // 🧮 Répartition pairs / impairs sur les « last » derniers tirages (Top X)
+    const pairOddRows = useMemo(
+        () =>
+            computePairOddDistribution(
+                draws
+                    .slice(0, last)
+                    .map((draw) =>
+                        (draw.draw_data?.numbers ?? []).map((n) => n.number)
+                    ),
+                NUMBER_PAIR_ODD_LABELS,
+                top
+            ),
+        [draws, last, top]
+    );
 
     // ------------------- COPY -------------------
     const copyToClipboard = () => {
@@ -102,6 +129,14 @@ export default function DataNumbers() {
 
             text += "\n";
         });
+
+        if (pairOddRows.length > 0) {
+            text += `PAIR / IMPAIR\n`;
+            pairOddRows.forEach((v) => {
+                text += `- ${v.value} : ${v.count} fois\n`;
+            });
+            text += `\n- Exemple : "3 pairs / 2 impairs : 8 fois" Signifie que 3 des 5 numéros du tirage sont pairs et 2 sont impairs, et cette répartition est sortie 8 fois dans les ${last} derniers tirages.\n\n`;
+        }
 
         navigator.clipboard.writeText(text);
         setCopiedNumbers(true);
@@ -207,6 +242,31 @@ export default function DataNumbers() {
                             </div>
                         );
                     })}
+
+                    {pairOddRows.length > 0 && (
+                        <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-semibold mb-2 flex items-center justify-between">
+                                <span>PAIR / IMPAIR</span>
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Sur {last} tirages
+                                </span>
+                            </h3>
+
+                            <ul className="space-y-1 text-sm divide-y divide-gray-200">
+                                {pairOddRows.map((v) => (
+                                    <li
+                                        key={v.value}
+                                        className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
+                                    >
+                                        <span className="font-mono text-xs md:text-sm">{v.value}</span>
+                                        <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
+                                            {v.count} fois
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

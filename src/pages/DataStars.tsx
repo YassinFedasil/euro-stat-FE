@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchTopStars } from "../services/topXService";
+import { getDrawData } from "../services/drawDataService";
+import type { IDrawData } from "../types/drawData";
+import {
+    computePairOddDistribution,
+    STAR_PAIR_ODD_LABELS,
+} from "../utils/pairOdd";
 
 type TopValue = {
     value: string;
@@ -14,6 +20,7 @@ export default function DataStars() {
     const [top, setTop] = useState(10);
     const [last, setLast] = useState(25);
     const [data, setData] = useState<ApiResponse | null>(null);
+    const [draws, setDraws] = useState<IDrawData[]>([]);
     const [loading, setLoading] = useState(false);
     const [copiedNumbers, setCopiedNumbers] = useState(false);
 
@@ -25,12 +32,32 @@ export default function DataStars() {
         } finally {
             setLoading(false);
         }
+        try {
+            setDraws(await getDrawData());
+        } catch {
+            // La section PAIR / IMPAIR reste masquée si les tirages sont indisponibles.
+        }
     };
 
-    // Recharge automatique quand top ou last change
+    // Recharge automatiquement quand top ou last change
     useEffect(() => {
         loadData();
     }, [top, last]);
+
+    // 🧮 Répartition paires / impaires sur les « last » derniers tirages (Top X)
+    const pairOddRows = useMemo(
+        () =>
+            computePairOddDistribution(
+                draws
+                    .slice(0, last)
+                    .map((draw) =>
+                        (draw.draw_data?.stars ?? []).map((s) => s.star)
+                    ),
+                STAR_PAIR_ODD_LABELS,
+                top
+            ),
+        [draws, last, top]
+    );
 
     // ------------------- COPY -------------------
     const copyToClipboard = () => {
@@ -53,6 +80,14 @@ export default function DataStars() {
 
             text += "\n";
         });
+
+        if (pairOddRows.length > 0) {
+            text += `PAIR / IMPAIR\n`;
+            pairOddRows.forEach((v) => {
+                text += `- ${v.value} : ${v.count} fois\n`;
+            });
+            text += `\n- Exemple : "1 paire / 1 impaire : 12 fois" Signifie que 1 des 2 étoiles du tirage est paire et 1 est impaire, et cette répartition est sortie 12 fois dans les ${last} derniers tirages.\n\n`;
+        }
 
         navigator.clipboard.writeText(text);
         setCopiedNumbers(true);
@@ -144,6 +179,31 @@ export default function DataStars() {
                             </ul>
                         </div>
                     ))}
+
+                    {pairOddRows.length > 0 && (
+                        <div className="border rounded-lg p-4 bg-white shadow-sm">
+                            <h3 className="font-semibold mb-2 flex items-center justify-between">
+                                <span>PAIR / IMPAIR</span>
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Sur {last} tirages
+                                </span>
+                            </h3>
+
+                            <ul className="text-sm divide-y divide-gray-200">
+                                {pairOddRows.map((v) => (
+                                    <li
+                                        key={v.value}
+                                        className="flex justify-between py-1"
+                                    >
+                                        <span>{v.value}</span>
+                                        <span className="font-medium">
+                                            {v.count} fois
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
