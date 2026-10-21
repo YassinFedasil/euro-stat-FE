@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchTopStars } from "../services/topXService";
 import { getDrawData } from "../services/drawDataService";
 import type { IDrawData } from "../types/drawData";
+import OccurrencesBadge from "../components/common/OccurrencesBadge";
 import {
     computePairOddDistribution,
     STAR_PAIR_ODD_LABELS,
@@ -57,6 +58,12 @@ export default function DataStars() {
                 top
             ),
         [draws, last, top]
+    );
+
+    // 🔢 Nombre réel de tirages analysés (limite « Sur X tirages » si disponible)
+    const analyzedDraws = useMemo(
+        () => (draws.length > 0 ? Math.min(last, draws.length) : 0),
+        [draws, last]
     );
 
     // ------------------- COPY -------------------
@@ -171,9 +178,11 @@ export default function DataStars() {
                                         className="flex justify-between py-1"
                                     >
                                         <span>{v.value}</span>
-                                        <span className="font-medium">
-                                            {v.count} fois
-                                        </span>
+                                        <OccurrencesBadge
+                                            count={v.count}
+                                            total={analyzedDraws}
+                                            className="font-medium"
+                                        />
                                     </li>
                                 ))}
                             </ul>
@@ -196,9 +205,11 @@ export default function DataStars() {
                                         className="flex justify-between py-1"
                                     >
                                         <span>{v.value}</span>
-                                        <span className="font-medium">
-                                            {v.count} fois
-                                        </span>
+                                        <OccurrencesBadge
+                                            count={v.count}
+                                            total={analyzedDraws}
+                                            className="font-medium"
+                                        />
                                     </li>
                                 ))}
                             </ul>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchTopNumbers } from "../services/topXService";
 import { getDrawData } from "../services/drawDataService";
 import type { IDrawData } from "../types/drawData";
+import OccurrencesBadge from "../components/common/OccurrencesBadge";
 import {
     computePairOddDistribution,
     computeIntervalDistribution,
@@ -119,6 +120,12 @@ export default function DataNumbers() {
                 top
             ),
         [draws, last, top]
+    );
+
+    // 🔢 Nombre réel de tirages analysés (limite « Sur X tirages » si disponible)
+    const analyzedDraws = useMemo(
+        () => (draws.length > 0 ? Math.min(last, draws.length) : 0),
+        [draws, last]
     );
 
     // ------------------- COPY -------------------
@@ -280,9 +287,11 @@ export default function DataNumbers() {
                                             className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
                                         >
                                             <span className="font-mono text-xs md:text-sm">{v.value}</span>
-                                            <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
-                                                {v.count} fois
-                                            </span>
+                                            <OccurrencesBadge
+                                                count={v.count}
+                                                total={analyzedDraws}
+                                                className="font-medium bg-gray-100 px-2 py-0.5 rounded-full"
+                                            />
                                         </li>
                                     ))}
                                 </ul>
@@ -306,9 +315,11 @@ export default function DataNumbers() {
                                         className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
                                     >
                                         <span className="font-mono text-xs md:text-sm">{v.value}</span>
-                                        <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
-                                            {v.count} fois
-                                        </span>
+                                        <OccurrencesBadge
+                                            count={v.count}
+                                            total={analyzedDraws}
+                                            className="font-medium bg-gray-100 px-2 py-0.5 rounded-full"
+                                        />
                                     </li>
                                 ))}
                             </ul>
@@ -331,9 +342,11 @@ export default function DataNumbers() {
                                         className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
                                     >
                                         <span className="font-mono text-xs md:text-sm">{v.value}</span>
-                                        <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
-                                            {v.count} fois
-                                        </span>
+                                        <OccurrencesBadge
+                                            count={v.count}
+                                            total={analyzedDraws}
+                                            className="font-medium bg-gray-100 px-2 py-0.5 rounded-full"
+                                        />
                                     </li>
                                 ))}
                             </ul>
@@ -356,9 +369,11 @@ export default function DataNumbers() {
                                         className="flex flex-wrap items-center justify-between gap-x-2 py-1 hover:bg-gray-50 px-1 rounded"
                                     >
                                         <span className="font-mono text-xs md:text-sm break-words">{v.value}</span>
-                                        <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
-                                            {v.count} fois
-                                        </span>
+                                        <OccurrencesBadge
+                                            count={v.count}
+                                            total={analyzedDraws}
+                                            className="font-medium bg-gray-100 px-2 py-0.5 rounded-full"
+                                        />
                                     </li>
                                 ))}
                             </ul>
