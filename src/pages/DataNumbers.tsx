@@ -5,6 +5,7 @@ import type { IDrawData } from "../types/drawData";
 import {
     computePairOddDistribution,
     computeIntervalDistribution,
+    computeTenRangeDistribution,
     NUMBER_PAIR_ODD_LABELS,
 } from "../utils/pairOdd";
 
@@ -106,6 +107,20 @@ export default function DataNumbers() {
         [draws, last, top]
     );
 
+    // 🧮 Répartition des 5 numéros par tranches de 10 sur les « last » derniers tirages (Top X)
+    const tenRangeRows = useMemo(
+        () =>
+            computeTenRangeDistribution(
+                draws
+                    .slice(0, last)
+                    .map((draw) =>
+                        (draw.draw_data?.numbers ?? []).map((n) => n.number)
+                    ),
+                top
+            ),
+        [draws, last, top]
+    );
+
     // ------------------- COPY -------------------
     const copyToClipboard = () => {
         if (!data) return;
@@ -159,6 +174,15 @@ export default function DataNumbers() {
                 text += `- ${v.value} : ${v.count} fois\n`;
             });
             text += `\n- Exemple : "3 numéros entre 1 et 25 / 2 numéros entre 26 et 50 : 8 fois" Signifie que 3 des 5 numéros du tirage sont compris entre 1 et 25, et 2 entre 26 et 50, et cette répartition est sortie 8 fois dans les ${last} derniers tirages.\n\n`;
+        }
+
+        if (tenRangeRows.length > 0) {
+            text += `RÉPARTITION PAR TRANCHES DE 10\n`;
+            tenRangeRows.forEach((v) => {
+                text += `- ${v.value} : ${v.count} fois\n`;
+            });
+            text += `\n- Exemple : "[1–10] : 1, [11–20] : 1, [21–30] : 1, [31–40] : 1, [41–50] : 1 : 12 fois" Signifie que le tirage contient 1 numéro dans chaque tranche de 10, et cette répartition est sortie 12 fois dans les ${last} derniers tirages.\n`;
+            text += `- Les tranches sont : [1-10], [11-20], [21-30], [31-40], [41-50] et leur somme est toujours égale à 5.\n\n`;
         }
 
         navigator.clipboard.writeText(text);
@@ -308,6 +332,31 @@ export default function DataNumbers() {
                                     >
                                         <span className="font-mono text-xs md:text-sm">{v.value}</span>
                                         <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
+                                            {v.count} fois
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {tenRangeRows.length > 0 && (
+                        <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-semibold mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <span>RÉPARTITION PAR TRANCHES DE 10</span>
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded shrink-0 whitespace-nowrap">
+                                    Sur {last} tirages
+                                </span>
+                            </h3>
+
+                            <ul className="space-y-1 text-sm divide-y divide-gray-200">
+                                {tenRangeRows.map((v) => (
+                                    <li
+                                        key={v.value}
+                                        className="flex flex-wrap items-center justify-between gap-x-2 py-1 hover:bg-gray-50 px-1 rounded"
+                                    >
+                                        <span className="font-mono text-xs md:text-sm break-words">{v.value}</span>
+                                        <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
                                             {v.count} fois
                                         </span>
                                     </li>

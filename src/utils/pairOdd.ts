@@ -118,3 +118,97 @@ export const INTERVAL_SPLIT_LABELS: SplitLabels = {
     first: ["numéro entre 1 et 25", "numéros entre 1 et 25"],
     second: ["numéro entre 26 et 50", "numéros entre 26 et 50"],
 };
+
+type MultiBucket = {
+    counts: number[];
+    count: number;
+};
+
+/**
+ * Regroupe des tirages par répartition entre N cases complémentaires.
+ *
+ * @param draws    Un tableau de valeurs par tirage (ex: les 5 numéros).
+ * @param classify Renvoie l'index de la case (0..labels.length-1), ou null
+ *                 pour ignorer la valeur.
+ * @param labels   Libellé de chaque case, dans l'ordre d'affichage.
+ * @param limit    Nombre maximum de répartitions à retourner (ex : « Top X »).
+ *                 Toutes les répartitions sont retournées si omis.
+ * @returns Les répartitions observées, triées par nombre d'occurrences
+ *          décroissant, puis lexicographiquement du plus grand nombre de
+ *          valeurs dans la 1re case au plus faible en cas d'égalité.
+ */
+export function computeMultiBucketDistribution(
+    draws: (string | number)[][],
+    classify: (value: string | number) => number | null,
+    labels: string[],
+    limit?: number
+): SplitRow[] {
+    const buckets = new Map<string, MultiBucket>();
+
+    for (const values of draws) {
+        if (!values || values.length === 0) continue;
+
+        const counts = new Array<number>(labels.length).fill(0);
+        let total = 0;
+        for (const value of values) {
+            const index = classify(value);
+            if (index !== null && index >= 0 && index < labels.length) {
+                counts[index] += 1;
+                total += 1;
+            }
+        }
+        if (total === 0) continue;
+
+        const key = counts.join("/");
+        const existing = buckets.get(key);
+        if (existing) {
+            existing.count += 1;
+        } else {
+            buckets.set(key, { counts, count: 1 });
+        }
+    }
+
+    return [...buckets.values()]
+        .sort((a, b) => {
+            if (b.count !== a.count) return b.count - a.count;
+            for (let i = 0; i < a.counts.length; i += 1) {
+                if (a.counts[i] !== b.counts[i]) return b.counts[i] - a.counts[i];
+            }
+            return 0;
+        })
+        .slice(0, limit && limit > 0 ? limit : undefined)
+        .map((bucket) => ({
+            value: labels
+                .map((label, i) => `${label} : ${bucket.counts[i]}`)
+                .join(", "),
+            count: bucket.count,
+        }));
+}
+
+/** Tranches de 10 couvrant les numéros 1 à 50, sans chevauchement. */
+export const TEN_RANGE_LABELS = [
+    "[1–10]",
+    "[11–20]",
+    "[21–30]",
+    "[31–40]",
+    "[41–50]",
+];
+
+const classifyTenRange = (value: string | number): number | null => {
+    const n = Number(value);
+    if (!Number.isInteger(n) || n < 1 || n > 50) return null;
+    return Math.floor((n - 1) / 10);
+};
+
+/** Répartition des 5 numéros d'un tirage par tranches de 10, par tirage. */
+export function computeTenRangeDistribution(
+    draws: (string | number)[][],
+    limit?: number
+): SplitRow[] {
+    return computeMultiBucketDistribution(
+        draws,
+        classifyTenRange,
+        TEN_RANGE_LABELS,
+        limit
+    );
+}
