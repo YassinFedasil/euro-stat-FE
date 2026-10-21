@@ -4,6 +4,7 @@ import { getDrawData } from "../services/drawDataService";
 import type { IDrawData } from "../types/drawData";
 import {
     computePairOddDistribution,
+    computeIntervalDistribution,
     NUMBER_PAIR_ODD_LABELS,
 } from "../utils/pairOdd";
 
@@ -91,6 +92,20 @@ export default function DataNumbers() {
         [draws, last, top]
     );
 
+    // 🧮 Répartition des numéros entre [1-25] et [26-50] sur les « last » derniers tirages (Top X)
+    const intervalRows = useMemo(
+        () =>
+            computeIntervalDistribution(
+                draws
+                    .slice(0, last)
+                    .map((draw) =>
+                        (draw.draw_data?.numbers ?? []).map((n) => n.number)
+                    ),
+                top
+            ),
+        [draws, last, top]
+    );
+
     // ------------------- COPY -------------------
     const copyToClipboard = () => {
         if (!data) return;
@@ -136,6 +151,14 @@ export default function DataNumbers() {
                 text += `- ${v.value} : ${v.count} fois\n`;
             });
             text += `\n- Exemple : "3 pairs / 2 impairs : 8 fois" Signifie que 3 des 5 numéros du tirage sont pairs et 2 sont impairs, et cette répartition est sortie 8 fois dans les ${last} derniers tirages.\n\n`;
+        }
+
+        if (intervalRows.length > 0) {
+            text += `INTERVALLES 1-25 / 26-50\n`;
+            intervalRows.forEach((v) => {
+                text += `- ${v.value} : ${v.count} fois\n`;
+            });
+            text += `\n- Exemple : "3 numéros entre 1 et 25 / 2 numéros entre 26 et 50 : 8 fois" Signifie que 3 des 5 numéros du tirage sont compris entre 1 et 25, et 2 entre 26 et 50, et cette répartition est sortie 8 fois dans les ${last} derniers tirages.\n\n`;
         }
 
         navigator.clipboard.writeText(text);
@@ -254,6 +277,31 @@ export default function DataNumbers() {
 
                             <ul className="space-y-1 text-sm divide-y divide-gray-200">
                                 {pairOddRows.map((v) => (
+                                    <li
+                                        key={v.value}
+                                        className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
+                                    >
+                                        <span className="font-mono text-xs md:text-sm">{v.value}</span>
+                                        <span className="font-medium bg-gray-100 px-2 py-0.5 rounded-full">
+                                            {v.count} fois
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {intervalRows.length > 0 && (
+                        <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <h3 className="font-semibold mb-2 flex items-center justify-between">
+                                <span>INTERVALLES 1-25 / 26-50</span>
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Sur {last} tirages
+                                </span>
+                            </h3>
+
+                            <ul className="space-y-1 text-sm divide-y divide-gray-200">
+                                {intervalRows.map((v) => (
                                     <li
                                         key={v.value}
                                         className="flex justify-between py-1 hover:bg-gray-50 px-1 rounded"
