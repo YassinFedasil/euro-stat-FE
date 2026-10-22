@@ -45,6 +45,15 @@ export async function apiPost<T = unknown>(path: string, body: unknown): Promise
   return (await res.json()) as T;
 }
 
+export async function apiPut<T = unknown>(path: string, body: unknown): Promise<T> {
+  const res = await request(path, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return (await res.json()) as T;
+}
+
 export async function apiDelete(path: string): Promise<void> {
   await request(path, { method: "DELETE" });
 }

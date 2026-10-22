@@ -13,6 +13,7 @@ import {
     ChartNoAxesCombined,
     FileChartColumnIcon,
     FileJson,
+    History as HistoryIcon,
     Star
 } from "lucide-react";
 
@@ -28,6 +29,11 @@ const navItems: NavItem[] = [
         icon: <GridIcon/>,
         name: "Play",
         path: "/",
+    },
+    {
+        icon: <HistoryIcon/>,
+        name: "History",
+        path: "/history",
     },
     {
         icon: <GridIcon/>,

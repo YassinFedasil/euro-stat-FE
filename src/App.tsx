@@ -6,6 +6,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import DashboardNumbers from "./pages/Dashboard/DashboardNumbers.tsx";
 import EuroMillions from "./pages/EuroMillions.tsx";
+import History from "./pages/History.tsx";
 import Statistics from "./pages/Statistics.tsx";
 import Numbers from "./pages/Numbers.tsx";
 import Stars from "./pages/Stars.tsx";
@@ -26,6 +27,7 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<EuroMillions />} />
+            <Route index path="/history" element={<History />} />
             <Route index path="/dashboard-numbers" element={<DashboardNumbers />} />
             <Route index path="/dashboard-stars" element={<DashboardStars />} />
 
