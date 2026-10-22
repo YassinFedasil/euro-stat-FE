@@ -203,7 +203,7 @@ export default function History() {
             )}
 
             {draw?.official && (
-              <div className="space-y-4">
+              <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
                 <div>
                   <p className="mb-2 text-theme-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                     Numéros gagnants
