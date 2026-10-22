@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, Dice5, Sparkles } from "lucide-react";
 import PageMeta from "../components/common/PageMeta";
+import { ApiError } from "../services/api";
 import { fetchNumbers, fetchStars } from "../services/euromillionsService";
 
 const DATE_REGEX = /^\d{2}-\d{2}-\d{4}$/;
@@ -73,6 +74,18 @@ function StarBall({ star, delay }: { star: number; delay: number }) {
   );
 }
 
+function describeFetchError(error: unknown, value: string): string {
+  if (error instanceof ApiError) {
+    if (error.status === 404) {
+      return `Aucun tirage disponible pour le ${value}. Vérifiez la date : les tirages EuroMillions ont lieu le mardi et le vendredi.`;
+    }
+    if (error.status === 0 || error.status >= 500) {
+      return "⚠️ Le serveur est momentanément indisponible. Réessayez dans quelques instants.";
+    }
+  }
+  return `⚠️ Impossible de récupérer les données pour le ${value}.`;
+}
+
 export default function EuroMillions() {
   const [date, setDate] = useState<string>(todayDate);
   const [generating, setGenerating] = useState(false);
@@ -118,14 +131,14 @@ export default function EuroMillions() {
         .filter((s) => Number.isInteger(s) && s >= 1 && s <= 12);
 
       if (numbersPool.length < 5 || starsPool.length < 2) {
-        setError(`⚠️ Impossible de récupérer les données pour le ${value}.`);
+        setError(`⚠️ Les données du tirage du ${value} ne sont pas encore disponibles.`);
         return;
       }
 
       poolsRef.current = { numbers: numbersPool, stars: starsPool };
       buildCombination();
-    } catch {
-      setError(`⚠️ Impossible de récupérer les données pour le ${value}.`);
+    } catch (err) {
+      setError(describeFetchError(err, value));
     } finally {
       setGenerating(false);
     }
