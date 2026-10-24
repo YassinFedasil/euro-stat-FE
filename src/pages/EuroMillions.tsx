@@ -186,6 +186,7 @@ function describeSaveError(error: unknown): string {
 
 export default function EuroMillions() {
   const [date, setDate] = useState<string>(getDefaultEuromillionsDateString);
+  const [sampling, setSampling] = useState<"guided" | "uniform">("uniform");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [engineResult, setEngineResult] = useState<EngineResponse | null>(null);
@@ -274,8 +275,7 @@ export default function EuroMillions() {
       const result = await fetchEngineCombinations(value, {
         seed,
         candidates: CANDIDATES,
-        //sampling: "guided",
-        sampling: "uniform",
+        sampling,
       });
       const hasMissingSnapshot =
         Array.isArray(result.warnings) &&
@@ -429,17 +429,16 @@ export default function EuroMillions() {
         </div>
 
         <div className="relative mt-6 flex flex-col items-center gap-3">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2">
             <button
               type="button"
               onClick={goToPreviousDraw}
               disabled={generating || saving}
-              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-12 sm:px-4"
+              className="inline-flex h-10 items-center justify-center gap-1 rounded-lg bg-white/10 px-2 text-xs font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:px-3 sm:text-sm"
               aria-label="Tirage précédent"
             >
               <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Tirage précédent</span>
-              <span className="sm:hidden">Préc.</span>
+              <span className="hidden sm:inline">Précédent</span>
             </button>
 
             <label htmlFor="em-date" className="flex items-center">
@@ -457,7 +456,7 @@ export default function EuroMillions() {
                 }}
                 placeholder={todayDate()}
                 disabled={generating || saving}
-                className="h-11 w-40 rounded-lg border border-white/20 bg-white/10 px-2 text-center text-base font-semibold tracking-widest text-white placeholder:text-white/40 focus:border-warning-300 focus:outline-none focus:ring-2 focus:ring-warning-300/40 disabled:opacity-60 sm:h-12 sm:w-44 sm:text-lg"
+                className="h-10 w-36 rounded-lg border border-white/20 bg-white/10 px-2 text-center text-sm font-semibold tracking-widest text-white placeholder:text-white/40 focus:border-warning-300 focus:outline-none focus:ring-2 focus:ring-warning-300/40 disabled:opacity-60 sm:h-11 sm:w-40 sm:text-base"
               />
             </label>
 
@@ -465,21 +464,38 @@ export default function EuroMillions() {
               type="button"
               onClick={goToNextDraw}
               disabled={generating || saving}
-              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-12 sm:px-4"
+              className="inline-flex h-10 items-center justify-center gap-1 rounded-lg bg-white/10 px-2 text-xs font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:px-3 sm:text-sm"
               aria-label="Tirage suivant"
             >
-              <span className="hidden sm:inline">Tirage suivant</span>
-              <span className="sm:hidden">Suiv.</span>
+              <span className="hidden sm:inline">Suivant</span>
               <ChevronRight className="h-4 w-4" />
             </button>
+
+            <select
+              value={sampling}
+              onChange={(e) => {
+                setSampling(e.target.value as "guided" | "uniform");
+                resetDisplay();
+                setError(null);
+              }}
+              disabled={generating || saving}
+              className="h-10 rounded-lg border border-white/20 bg-white/10 px-2 text-xs font-medium text-white focus:border-warning-300 focus:outline-none focus:ring-2 focus:ring-warning-300/40 disabled:opacity-60 sm:h-11 sm:px-3 sm:text-sm"
+            >
+              <option value="guided" className="bg-brand-900">
+                Guidé
+              </option>
+              <option value="uniform" className="bg-brand-900">
+                Uniforme
+              </option>
+            </select>
           </div>
 
           <button
             onClick={handleStart}
             disabled={generating || saving}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-linear-to-br from-warning-300 to-warning-500 px-6 text-base font-bold uppercase tracking-wider text-brand-950 shadow-theme-md transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-linear-to-br from-warning-300 to-warning-500 px-5 text-sm font-bold uppercase tracking-wider text-brand-950 shadow-theme-md transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:px-6 sm:text-base"
           >
-            <Sparkles className="h-5 w-5" />
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             Analyser
           </button>
         </div>
