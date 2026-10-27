@@ -186,7 +186,7 @@ function describeSaveError(error: unknown): string {
 
 export default function EuroMillions() {
   const [date, setDate] = useState<string>(getDefaultEuromillionsDateString);
-  const [sampling, setSampling] = useState<"guided" | "uniform">("uniform");
+  const [sampling, setSampling] = useState<"guided" | "uniform" | "ml">("uniform");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [engineResult, setEngineResult] = useState<EngineResponse | null>(null);
@@ -474,7 +474,7 @@ export default function EuroMillions() {
             <select
               value={sampling}
               onChange={(e) => {
-                setSampling(e.target.value as "guided" | "uniform");
+                setSampling(e.target.value as "guided" | "uniform" | "ml");
                 resetDisplay();
                 setError(null);
               }}
@@ -486,6 +486,9 @@ export default function EuroMillions() {
               </option>
               <option value="uniform" className="bg-brand-900">
                 Uniforme
+              </option>
+              <option value="ml" className="bg-brand-900">
+                Machine Learning (ML)
               </option>
             </select>
           </div>

@@ -1,6 +1,6 @@
 import { apiGet } from "./api";
 
-export type EngineSampling = "guided" | "uniform";
+export type EngineSampling = "guided" | "uniform" | "ml";
 
 export type EngineNumberIndicator = {
   number: number;
@@ -47,11 +47,13 @@ export type EngineCombination = {
     individual: number;
     profile: number;
     associations: number;
+    ml: number;
   };
   factors: {
     individual: number;
     profile: number;
     associations: number;
+    ml: number;
   };
   individuals: {
     numbers: {
